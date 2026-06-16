@@ -37,5 +37,3 @@ to change how the framework behaves. Nothing here is a black box.
 
 This SDK is built to be read. If something's unclear or could be better, open an
 issue — feedback is welcome.
-
-## need to add a not that pubsubclient is required
