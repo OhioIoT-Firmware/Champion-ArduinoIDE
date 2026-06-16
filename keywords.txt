@@ -1,0 +1,68 @@
+
+
+Counter	KEYWORD1
+
+load_all	KEYWORD2
+increment    KEYWORD2
+reset_all   KEYWORD2
+
+
+
+Messages	KEYWORD1
+
+respond	KEYWORD2
+
+
+
+Rssi	KEYWORD1
+
+check	KEYWORD2
+
+
+
+
+
+
+
+Utils	KEYWORD1
+
+first_key   KEYWORD2
+add_key KEYWORD2
+last_key    KEYWORD2
+one_key KEYWORD2
+
+
+
+
+OTA	KEYWORD1
+
+initialize	KEYWORD2
+update_firmware	KEYWORD2
+
+
+set_ota_pending	KEYWORD2
+mark_firmware_as_valid	KEYWORD2
+mark_firmware_as_valid_if_appropriate	KEYWORD2
+rollback_and_reboot	KEYWORD2
+rollback_if_not_verified_within_time	KEYWORD2
+Power	KEYWORD1
+
+begin   KEYWORD2
+initialize	KEYWORD2
+check	KEYWORD2
+
+Settings	KEYWORD1
+
+bind_int	KEYWORD2
+bind_float	KEYWORD2
+bind_bool	KEYWORD2
+bind_string	KEYWORD2
+load	KEYWORD2
+set	KEYWORD2
+clear	KEYWORD2
+clear_all	KEYWORD2
+has	KEYWORD2
+get_as_string	KEYWORD2
+print	KEYWORD2
+count	KEYWORD2
+
