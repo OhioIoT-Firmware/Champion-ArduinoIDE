@@ -77,11 +77,18 @@ void OTA::_mark_firmware_as_valid_if_appropriate() {
 // USED IN WIFI_TOOLS
 void OTA::rollback_and_reboot() {
     Serial.println("\tSHOULD BE CALLING FOR ROLLBACK\n\n");
+
+    // Re-arm the boot-report gate. The next boot's reporter only speaks if
+    // ota_pending is set; a commanded rollback (manual, or one issued after
+    // the image was already accepted) would otherwise have cleared it and
+    // boot silently. Harmless when already set (the timeout path) — it just
+    // keeps every rollback, however triggered, reporting on the next boot.
+    set_ota_pending();
+
     esp_err_t err = esp_ota_mark_app_invalid_rollback_and_reboot();
-    if (err != ESP_OK) {    Serial.print("\txx failed to mark app as invalid and reboot: "); Serial.println(esp_err_to_name(err)); } 
+    if (err != ESP_OK) {    Serial.print("\txx failed to mark app as invalid and reboot: "); Serial.println(esp_err_to_name(err)); }
     else {                  Serial.println("\t.. marked app as invalid and rebooting\n\n");    }
 }
-
 
 
 

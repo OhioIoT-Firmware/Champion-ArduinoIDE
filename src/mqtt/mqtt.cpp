@@ -39,9 +39,11 @@ void Mqtt::setup(const char * mqtt_host, int mqtt_port, const char * username, c
     strcpy(_username, username);
     strcpy(_password, password);
 
+	_retry_timer = millis();
+
 }
 
-bool Mqtt::maintain() {
+void Mqtt::maintain() {
 
     if (!_mqtt_client.connected() || !is_connected) {
 
@@ -56,12 +58,12 @@ bool Mqtt::maintain() {
 
             // a "retry" is any attempt that isn't the very first one after boot.
             // capture this BEFORE the connect call so success doesn't reset it.
-            bool is_retry = !_is_first_connect;
+            // bool is_retry = !_is_first_connect;
 
             if (_mqtt_client.connect(_device_id, _username, _password)) {
                 Serial.println("\tmqtt connected...\n");
                 is_connected = true;
-                _is_first_connect = false;   // ← previously never flipped; meant retry timer
+                   // ← previously never flipped; meant retry timer
                                              //   was effectively bypassed forever.
                 _subscribe_to_all();
 
@@ -73,14 +75,16 @@ bool Mqtt::maintain() {
                 Serial.println(_mqtt_client.state());
             }
 
-            return is_retry;   // first-ever attempt isn't a retry; everything after is
+			_is_first_connect = false;
+
+            // return is_retry;   // first-ever attempt isn't a retry; everything after is
         }
 
-        return false;          // dropped, but waiting on retry timer
+        // return false;          // dropped, but waiting on retry timer
 
     } else {
         _mqtt_client.loop();
-        return false;          // just servicing an existing connection
+        // return false;          // just servicing an existing connection
     }
   
 }

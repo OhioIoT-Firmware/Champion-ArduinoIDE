@@ -25,11 +25,7 @@ class Mqtt {
         // connect
         void setup(const char *, int, const char *, const char *, const char *, const char *);
 
-        // returns true if a connect attempt was actually made on this call
-        // (the call is internally timer-gated so most invocations just service
-        // the existing connection).  ignore the return value if you don't
-        // care; the controller uses it to count retries.
-        bool maintain();
+        void maintain();
 
         void report_disconnect();
 
@@ -80,9 +76,6 @@ class Mqtt {
         // connect
         unsigned long _retry_timer;
         bool _is_first_connect = true;
-
-
-        // TODO:  why is my is_connected no public?
 
         char _device_id[MAX_DEVICE_ID_LENGTH];
         char _username[32]; // TODO: revisit - what do i want to do with the lengths

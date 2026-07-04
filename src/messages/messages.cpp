@@ -13,11 +13,14 @@ Messages messages;
 
 
 
-void Messages::set_settings_handler(TwoHandler h)        { _settings_handler      = h; }
-void Messages::set_ota_handler(OtaHandler h)             { _ota_handler           = h; }
-void Messages::set_command_handler(ThreeHandler h)       { _command_handler       = h; }
-void Messages::set_clear_counter_handler(ZeroHandler h)  { _clear_counter_handler = h; }
-void Messages::set_restart_handler(ZeroHandler h)        { _restart_handler       = h; }
+void Messages::set_settings_handler(SettingsHandler h)   { _settings_handler      = h; }
+void Messages::set_command_handler(CommandHandler h)     { _command_handler       = h; }
+void Messages::set_ota_handler(OtaStartHandler h)        { _ota_handler           = h; }
+void Messages::set_clear_counter_handler(TrackedActionHandler h){ _clear_counter_handler = h; }
+void Messages::set_restart_handler(TrackedActionHandler h)      { _restart_handler       = h; }
+void Messages::set_ota_abort_handler(ActionHandler h)    { _ota_abort_handler     = h; }
+void Messages::set_ota_accept_handler(ActionHandler h)   { _ota_accept_handler    = h; }
+void Messages::set_ota_rollback_handler(ActionHandler h) { _ota_rollback_handler  = h; }
 
 
 // Group namespace subscriptions now live in the mqtt module —
@@ -48,10 +51,17 @@ bool Messages::main_handler(char* topic, char* payload) {
 
 		if (strcmp(third_elem, "settings") == 0) {
 			Serial.println("\t@@ got a settings update");
-			bool success = false;
-			if (messages._settings_handler) success = messages._settings_handler(fourth_elem, payload);
-			if (success) return true;
-			// TODO:  we need to send an mqtt showing the new value, so that it hits the twin
+			// fourth_elem is the setting's key (from ~/~/settings/{key});
+			// payload is the raw new value.  Settings topics are framework-
+			// owned, so a registered handler always claims the message —
+			// even when the update is refused.  The handler (installed by
+			// the controller) applies the update and echoes the value the
+			// device holds afterward, which is what feeds the twin and
+			// keeps the dashboard honest.
+			if (messages._settings_handler) {
+				messages._settings_handler(fourth_elem, payload);
+				return true;
+			}
 		}
 
 
@@ -103,20 +113,55 @@ bool Messages::main_handler(char* topic, char* payload) {
 
 
 	// SYSTEM COUNTERS ++++++++++++++++++++++++++++++++++++++
+	// Topic: ~/~/clear_counters or ~/~/clear_counters/{code}.  fourth_elem
+	// was already parsed at the top of this function — empty string if no
+	// code segment was present.  Response (if any) is published by the
+	// registered handler itself, isolated under .../response/clear_counters/...
+	// — never .../response/command/..., so it can't be confused with the
+	// generic command-response channel.
 
 		if (strcmp(third_elem, "clear_counters") == 0) {
 			if (messages._clear_counter_handler) {
-				messages._clear_counter_handler();
+				messages._clear_counter_handler(fourth_elem);
 				return true;
 			}
 		}
 
 
 	// RESTART ++++++++++++++++++++++++++++++++++++++
+	// Topic: ~/~/restart or ~/~/restart/{code}.  Same code-passing as
+	// clear_counters above.  Response (if any) is published by the
+	// registered handler under .../response/restart/..., before it reboots.
 
 		if (strcmp(third_elem, "restart") == 0) {
 			if (messages._restart_handler) {
-				messages._restart_handler();
+				messages._restart_handler(fourth_elem);
+				return true;
+			}
+		}
+
+
+	// OTA LIFECYCLE ACTIONS ++++++++++++++++++++++++++++++++++++++
+	// Parameterless, same shape as restart.  Single-segment topics, so they do
+	// NOT collide with the ~/~/ota/{group} start route (which matches "ota").
+
+		if (strcmp(third_elem, "ota_abort") == 0) {
+			if (messages._ota_abort_handler) {
+				messages._ota_abort_handler();
+				return true;
+			}
+		}
+
+		if (strcmp(third_elem, "ota_accept") == 0) {
+			if (messages._ota_accept_handler) {
+				messages._ota_accept_handler();
+				return true;
+			}
+		}
+
+		if (strcmp(third_elem, "ota_rollback") == 0) {
+			if (messages._ota_rollback_handler) {
+				messages._ota_rollback_handler();
 				return true;
 			}
 		}

@@ -6,13 +6,25 @@
 	#define ROLLBACK_THRESHOLD 600000
 #endif
 
-#ifndef OTA_TIMEOUT
-	#define OTA_TIMEOUT 300000
+// Per-socket-read timeout: how long a single recv() waits for *some* bytes
+// before the transport gives up.  This is NOT a total-download deadline — it
+// resets every time data arrives.  Keep it short so a true stall is caught
+// fast and no single check() can block the loop (and MQTT) for long.
+#ifndef OTA_SOCKET_TIMEOUT
+	#define OTA_SOCKET_TIMEOUT 10000
+#endif
+
+// Total wall-clock budget for one OTA, start to finish.  Catches the case the
+// per-read timeout can't: a download that trickles in slowly but never fully
+// stalls.  check() converts an overrun into an abort.  Bump this if you turn
+// on server-side throttling (throttledSend) for large images.
+#ifndef OTA_MAX_DURATION
+	#define OTA_MAX_DURATION 300000
 #endif
 
 
-#ifndef OTA_URL
-    #define OTA_URL "https://test-ota.ohioiot.com"
+#ifndef OTA_HOST
+    #define OTA_HOST "https://test-ota.ohioiot.com"
 #endif
 
 #include <esp_err.h>
@@ -42,7 +54,7 @@ class OTA {
     public:
         OTA();
 
-        enum State { IDLE, IN_PROGRESS, SUCCESS, FAILED };
+        enum State { IDLE, IN_PROGRESS, SUCCESS, FAILED, ABORTED };
 
         // ota.cpp
         void initialize();
@@ -53,7 +65,17 @@ class OTA {
         //                   #defined in credentials.h
         bool  update_firmware(const char * group_name, const char * auth_key = nullptr);
         void  check();             // call from main loop every iteration
-        void  acknowledge();       // call after handling SUCCESS/FAILED
+        void  acknowledge();       // call after handling SUCCESS/FAILED/ABORTED
+
+        // Request teardown of an in-flight download (e.g. user hit "abort" in
+        // the app).  Safe to call anytime; no-op unless we're downloading.
+        // The actual esp_https_ota_abort() happens in check(), which owns the
+        // handle — see ota.cpp.
+        void  abort();
+
+        // Why the last abort happened: "manual", "timeout", or "" if none.
+        // Observers (the controller) read this to report the right outcome.
+        const char * get_abort_reason();
 
         State get_state()   { return _state; }
         int   get_percent() { return _percent; }
@@ -101,6 +123,12 @@ class OTA {
         State  _state      = IDLE;
         int    _percent    = 0;
         void * _ota_handle = nullptr;   // actually esp_https_ota_handle_t
+
+        // abort + wall-clock watchdog state
+        enum AbortReason { ABORT_NONE, ABORT_MANUAL, ABORT_TIMEOUT };
+        bool          _abort_requested = false;
+        AbortReason   _abort_reason    = ABORT_NONE;
+        unsigned long _ota_start_time  = 0;   // millis() when IN_PROGRESS began
 
         // group name for the in-flight / just-completed update (read back
         // from NVS on boot for outcome reporting)

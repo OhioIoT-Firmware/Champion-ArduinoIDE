@@ -4,15 +4,16 @@
 
 #include "Arduino.h"
 
-int memory_check_interval = 30000;
-unsigned long memory_timer = millis();
-bool memory_first_run = true;
+// int memory_check_interval = 30000;
+// unsigned long memory_timer = millis();
+// bool memory_first_run = true;
 
+// TODO: to confirm, there is alreayd an interval on calls to "check all", so we don't need to gate it here
 
 
 void Metrics::_check_memory(void) {
 
-	if ( millis() - memory_timer > memory_check_interval || memory_first_run) {	
+	// if ( millis() - memory_timer > memory_check_interval || memory_first_run) {	
 		
 		// Serial.println("\t_check_memory():");
 		
@@ -40,9 +41,9 @@ void Metrics::_check_memory(void) {
 			TODO: IF MEMORY IS LOW, _mqtt->send("warning/low memory");
 		*/
 
-		memory_first_run = false;
-		memory_timer = millis();
+		// memory_first_run = false;
+		// memory_timer = millis();
 
-	}
+	// }
 
 }

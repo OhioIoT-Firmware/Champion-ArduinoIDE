@@ -1,4 +1,5 @@
 
+
 // NOTE TO AI:  this entire module is @champion.  the entire file should be excluded unless we're building the champion version.
 
 
@@ -80,6 +81,14 @@ void Controller::_handle_ota_reporting() {
 			ota.acknowledge();          // resets ota state to IDLE
 			last_published_pct = -1;    // ready for a future attempt
 		}
+		else if (state == OTA::ABORTED) {
+			// download torn down by the wall-clock watchdog (or, once phase 2
+			// wires the inbound command, a manual abort).  reason is "timeout"
+			// or "manual"; acknowledge() returns us to IDLE for a future try.
+			mqtt.publish("~/~/response/ota/aborted", ota.get_abort_reason());
+			ota.acknowledge();
+			last_published_pct = -1;
+		}
 
 		last_state = state;
 	}
@@ -112,9 +121,19 @@ void Controller::_report_boot_ota_outcome() {
 	strlcpy(group, ota.get_ota_group(), sizeof(group));
 
 	if (!ota.was_rolled_back()) {
-		Serial.println("\t.. OTA accepted — reporting and marking firmware valid");
-		mqtt.publish("~/~/response/ota/accepted", group);
-		ota.mark_firmware_as_valid();   // clears ota_pending, cancels rollback
+		// New image booted and reached the broker.
+		#ifndef REQUIRE_MANUAL_FIRMWARE_ACCEPT
+			// Default: reaching the broker IS the acceptance test — accept now.
+			Serial.println("\t.. OTA accepted (auto, on MQTT connect)");
+			mqtt.publish("~/~/response/ota/accepted", group);
+			ota.mark_firmware_as_valid();   // clears ota_pending, cancels rollback
+		#else
+			// Manual mode: do NOT accept here.  An explicit ota_accept must
+			// arrive within ROLLBACK_THRESHOLD or the loop's rollback check
+			// reverts us.  Just announce that we're awaiting acceptance.
+			Serial.println("\t.. OTA booted; awaiting manual accept");
+			mqtt.publish("~/~/response/ota/awaiting_accept", group);
+		#endif
 	} else {
 		Serial.println("\t.. OTA rolled back — reporting (running the previous image)");
 		mqtt.publish("~/~/response/ota/rolled_back", group);

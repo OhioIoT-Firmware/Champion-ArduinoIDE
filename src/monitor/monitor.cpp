@@ -16,30 +16,34 @@ Monitor monitor;
 void Monitor::setup(int interval) {
 	events.load_all();
 	events.increment("starts");
-	metrics.check_all();
+	// metrics.check_all();
 	_interval = interval;
 }
 
 
 // Ships a complete state snapshot — boot packet plus a full sweep of
 // dynamic data.  Called at first connect (gated externally by the
-// controller via boot_packet_not_sent) and again whenever we want a fresh
+// controller via boot_packet_sent) and again whenever we want a fresh
 // full-state publish, e.g. after clearing event counters.
 //
 // No internal gate on send_boot_packet — every call to send_all ships
 // everything.  The first-boot-only behavior comes from the controller's
 // loop choosing when to call this.
-void Monitor::send_all() {
+// void Monitor::send_all() {
 
-	_heartbeat_timer = millis();
+// 	// _heartbeat_timer = millis();
 
-	send_boot_packet();
+// 	metrics.check_all();
 
-	metrics.check_dynamic();
-	send_counters();
-	send_runtime();
+// 	send_identity();
+// 	send_session();
+// 	send_network();
+// 	send_counters();
+// 	send_runtime();
 
-}
+// 	// boot_packet_sent = true;
+
+// }
 
 
 // Heartbeat only ships what can have changed.  Static stuff (chip info,
@@ -51,19 +55,30 @@ void Monitor::send_heartbeat() {
 
 	if (millis() - _heartbeat_timer > _interval) {
 
-		if (boot_packet_not_sent) {
-			send_boot_packet();
+		if (_heartbeat_counter == 0) {
+
+			metrics.check_all();
+			send_identity();
+			send_firmware();
+			send_session();
+			send_network();
+			send_counters();
+			send_runtime();
+
+
+		} else {
+
+			metrics.check_dynamic();
+			if (_heartbeat_counter % 2) {
+				send_counters();
+			} else {
+				send_runtime();
+			}
+			
 		}
 
-		metrics.check_dynamic();
-
-		switch (_heartbeat_counter++) {
-			case 0:  send_counters();  break;
-			case 1:  send_runtime();   break;
-			case 2:  send_network();                  // IP/SSID/dns/mac — refresh periodically
-					_heartbeat_counter = 0;
-					break;
-		}
+		_heartbeat_counter++;
+		if (_heartbeat_counter > STATIC_REFRESH_EVERY) _heartbeat_counter = 0; 
 
 		_heartbeat_timer = millis();
 	}
@@ -75,11 +90,15 @@ void Monitor::send_heartbeat() {
 //  BOOT PACKET — session-static facts, sent once per power cycle
 // ─────────────────────────────────────────────────────────────────────
 
-void Monitor::send_boot_packet() {
-	send_identity();
+// void Monitor::send_boot_packet() {
+// 	send_identity();
+// 	send_session();
+// 	boot_packet_sent = false;
+// }
+
+void Monitor::refresh_counters() {
 	send_session();
-	// send_network();
-	boot_packet_not_sent = false;
+	send_counters();
 }
 
 
@@ -99,6 +118,20 @@ void Monitor::send_identity() {
 }
 
 
+// firmware identity — sha256 of the running image (64 hex chars).  Shipped on
+// its own line because it's session-static (can't change without a reboot, and
+// a reboot re-runs the boot packet) and long enough to deserve its own message.
+void Monitor::send_firmware() {
+
+	char buffer[128] = "";
+
+	json.first_key(buffer, "fw_hash",    metrics.fw_hash);
+	json.last_key(buffer,  "fw_bld_date", metrics.fw_built);
+
+	mqtt.publish("~/~/status", buffer);
+}
+
+
 // session boot facts — vary per power cycle but frozen during the session.
 //   reset_reason     why this boot started (POWERON, BROWNOUT, PANIC, ...)
 //   starts           lifetime boot count
@@ -111,10 +144,11 @@ void Monitor::send_session() {
 	char buffer[126] = "";
 	char number_holder[12];
 
-	json.first_key(buffer, "reset_reason",   metrics.reset_reason);
+	itoa(events.starts, number_holder, 10);
+	json.first_key(buffer, "starts", number_holder);
 
-	itoa(events.starts,          number_holder, 10);
-	json.add_key(buffer,   "starts",          number_holder);
+	json.add_key(buffer, "reset_reason", metrics.reset_reason);
+
 	itoa(events.wifi_brown_outs, number_holder, 10);
 	json.last_key(buffer,  "wifi_brown_outs", number_holder);
 
@@ -127,9 +161,9 @@ void Monitor::send_network() {
 
 	char buffer[160] = "";
 
-	json.first_key(buffer, "local_IP",    metrics.local_IP);
-	json.add_key(buffer,   "SSID",        metrics.SSID);
-	json.add_key(buffer,   "dns_IP",      metrics.dns_IP);
+	json.first_key(buffer,   "SSID",        metrics.SSID);
+	json.add_key(buffer, "local_IP",    metrics.local_IP);
+	// json.add_key(buffer,   "dns_IP",      metrics.dns_IP);
 	json.last_key(buffer,  "mac_address", metrics.mac_address);
 
 	mqtt.publish("~/~/status", buffer);
@@ -177,10 +211,10 @@ void Monitor::send_runtime() {
 
 	char buffer[126] = "";
 
-	json.first_key(buffer, "free_heap",     metrics.free_heap_kb);
-	json.add_key(buffer,   "min_free_heap", metrics.min_free_heap_kb);
+	json.first_key(buffer, "free_heap_kb",     metrics.free_heap_kb);
+	json.add_key(buffer,   "min_free_heap_kb", metrics.min_free_heap_kb);
 	json.add_key(buffer,   "spot_rssi",     metrics.spot_rssi);
-	json.last_key(buffer,  "uptime_s",      metrics.uptime_s);
+	json.last_key(buffer,  "uptime",      metrics.uptime_s);
 
 	mqtt.publish("~/~/status", buffer);
 }

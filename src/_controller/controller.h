@@ -28,6 +28,12 @@ class Controller {
 		void _report_boot_ota_outcome();
 		bool _boot_outcome_reported = false;
 
+		// On the first connected loop after boot, publish every registered
+		// setting so the device dashboard's settings section populates.
+		// One-shot; no-op if the user never registered a settings table.
+		void _publish_settings_snapshot();
+		bool _settings_snapshot_sent = false;
+
 };
 
 

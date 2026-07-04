@@ -4,6 +4,10 @@
 
 #include "Arduino.h"
 
+#ifndef STATIC_REFRESH_EVERY
+	#define STATIC_REFRESH_EVERY 30
+#endif
+
 
 class Monitor {
 
@@ -13,12 +17,14 @@ class Monitor {
 
 		void setup(int);
 
-		void send_all();
+		// void send_all();
 		void send_heartbeat();
+		void refresh_counters();
 
-		// boot packet — static device facts, sent once per power cycle
-		void send_boot_packet();
+		// boot packet — static device facts
+		// void send_boot_packet();
 		void send_identity();
+		void send_firmware();
 		void send_session();
 		void send_network();
 
@@ -26,7 +32,7 @@ class Monitor {
 		void send_counters();
 		void send_runtime();
 
-		bool boot_packet_not_sent = true;
+		// bool boot_packet_sent = false;
 
 
 	private:
