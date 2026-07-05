@@ -49,7 +49,7 @@ To override the CA_CERT to point your device to a different MQTT broker, create 
     #define MQTT_PORT 8883
 #endif
 
-char wifi_ssid[WIFI_SSID_LEN];	// are these LEN defined anywhere?
+char wifi_ssid[WIFI_SSID_LEN];	// defined in wifi_tools.h
 char wifi_pass[WIFI_PASS_LEN];
 
 
@@ -58,28 +58,6 @@ Controller::Controller() {}
 Controller controller;
 
 
-// Standard subscription list — installed automatically whenever the
-// controller is in use.  These guarantee every device is reachable by its
-// device_id and through the broadcast channel, no matter what the user
-// configures in main.cpp.
-//
-//   ~/~/...           — per-device addressing (using this device's id)
-//   ~/broadcast/...   — fleet-wide broadcasts (idempotent / notification)
-//
-// Group-level addressing (~/{group}/...) is opt-in via main.cpp:
-//   messages.add_command_namespace("lights");
-//   messages.add_settings_namespace("kitchen");
-//
-// OTA is per-device only.  The cloud addresses each device individually
-// at ~/~/ota/{group_name}, so there is no group OTA subscription here.
-//
-// NOTE: device-side responses go under ~/~/response/...  Nothing here
-// subscribes under that prefix, so the broker can't echo our own responses
-// back into our message dispatcher.  Keep it that way.
-//
-// NOTE: settings echoes go OUT on ~/~/settings (three segments).  The
-// inbound subscription is ~/~/settings/+ (four segments), so the broker
-// can't feed our own echoes back into the settings route either.
 static const char * std_subscription_list[] = {
 	"~/~/settings/+",		// champion only
 	"~/~/command/+",		// scaler and champion
@@ -89,16 +67,10 @@ static const char * std_subscription_list[] = {
 	"~/~/ota_rollback",		// champion only — revert to previous image
 	"~/~/clear_counters",	// scaler and champion
 	"~/~/restart",			// scaler and champion
-	"~/broadcast/+",		// delete??
 	nullptr
 };
 
 
-// Publish one setting as a single-key JSON object on the settings report
-// topic.  This is what feeds the twin (and therefore the device dashboard):
-// the boot snapshot uses it for every row, and every remote update — applied
-// OR refused — triggers one echo so the dashboard always shows the value the
-// device actually holds.
 static void _publish_one_setting(const char * key, const char * value) {
 	char buffer[128] = "";
 	json.one_key(buffer, key, value);
@@ -107,23 +79,18 @@ static void _publish_one_setting(const char * key, const char * value) {
 
 
 void Controller::setup(const char * mqtt_user, const char * mqtt_pass) {
-
-	// if the user doesn't provide the wifi_ssid and wifi_pass (maybe they don't know where the device is going)
-	// then we trigger the provisioner on first boot.
     if (!provisioner.creds_already_exist(wifi_ssid, wifi_pass)) {
 		provisioner.run_provisioner(wifi_ssid, wifi_pass);
 		provisioner.store_creds(wifi_ssid, wifi_pass);
 	}
-
 	setup(wifi_ssid, wifi_pass, mqtt_user, mqtt_pass);
-
 }
 
 
 
 void Controller::setup(const char * wifi_ssid, const char * wifi_pass, const char * mqtt_user, const char * mqtt_pass) {
 
-    char deviceID[9];
+    char deviceID[DEVICE_ID_LEN];
     device_id.get_or_set(deviceID);
 
 	wifi_tools.begin(wifi_ssid, wifi_pass);
@@ -148,42 +115,15 @@ void Controller::setup(const char * wifi_ssid, const char * wifi_pass, const cha
 	// subscriptions and any add_command_namespace calls go on top of this.
 	mqtt.set_std_subscriptions(std_subscription_list);
 
-	// code is "" when the action was sent untracked (today's existing
-	// behavior, unchanged) — only publish a response when a tracking code
-	// was actually supplied.  Topic is .../response/clear_counters/{code}/success,
-	// deliberately not .../response/command/..., so it can never be picked
-	// up by the generic command-response listener (or vice versa).
+
 	messages.set_clear_counter_handler([](const char* code) {
 		events.reset_all();   // wipes everything including starts and brown_outs
 		monitor.refresh_counters();
-
-		// if (code[0]) {
-		// 	char response_topic[100] = "~/~/response/clear_counters/";
-		// 	strcat(response_topic, code);
-		// 	strcat(response_topic, "/success");
-		// 	mqtt.publish(response_topic, "");
-		// }
 	});
 
-	// Restart the chip.  If a tracking code was supplied, ack it first —
-	// "received" only, never "success": the device reboots immediately
-	// after, so there's no point at which a "success" could still be sent.
-	// The short delay gives that publish a chance to actually flush over
-	// the wire before ESP.restart() yanks everything down hard. No need
-	// to disconnect mqtt cleanly either way — we publish at QoS 0 and the
-	// broker will time the session out on its own. The "starts" counter
-	// will also increment on the next boot via monitor.setup, which is a
-	// second, independent confirmation the cloud can check.
 	messages.set_restart_handler([](const char* code) {
-
-		// if (code[0]) {
-		// 	char response_topic[100] = "~/~/response/restart/";
-		// 	strcat(response_topic, code);
-		// 	mqtt.publish(response_topic, "");	// 5-segment topic -> implied status "received"
-		// 	delay(200);							// let the ack actually go out before we reboot
-		// }
-
 		Serial.println("\n\t### RESTARTING ###\n");
+		events.flush();		// persist any RAM-only counts before we go down; no-op if nothing pending
 		delay(100);
 		ESP.restart();
 	});
@@ -272,7 +212,6 @@ void Controller::loop() {
 
 		if (mqtt.is_connected) {
 
-			// if (!monitor.boot_packet_sent) monitor.send_all();	// we don't send this in setup, because mqtt is not connected yet
 			monitor.send_heartbeat();
 
 			_report_boot_ota_outcome();   // once-only; no-op after first run
@@ -287,7 +226,7 @@ void Controller::loop() {
 	} else {
 
 		if (wifi_tools.reconnect()) {
-			events.increment("wifi_retries");
+			events.increment_ram("wifi_retries");	// @Scaler — RAM only: fires every RECONNECT_INTERVAL while offline, so no NVS write per attempt.  flushed on the reconnect edge below.
 		}
 		mqtt.report_disconnect();
 
@@ -299,7 +238,14 @@ void Controller::loop() {
 
 	if (wifi_was_connected && !wifi_tools.is_connected) {
 		Serial.println("\n\twifi disconnected...\n");
-		events.increment("wifi_drops");
+		events.increment_ram("wifi_drops");		// RAM only — a flapping AP can fire this often; persisted on the next clean reconnect
+	}
+
+	// clean reconnect — persist any retry/drop counts accumulated in RAM
+	// while we were offline.  one NVS write per outage instead of one per
+	// 10-second retry attempt.
+	if (!wifi_was_connected && wifi_tools.is_connected) {
+		events.flush();
 	}
 
 	// mqtt_drops      = falling edge of is_connected
@@ -315,7 +261,7 @@ void Controller::loop() {
 	mqtt_was_connected = mqtt.is_connected;
 	
 	if (provisioner.pin_is_pulled()) {
-		Serial.println("pulled");
+		Serial.println("\t.. provisioning pin is pulled");
 		mqtt.report_disconnect();
 		provisioner.run_provisioner(wifi_ssid, wifi_pass);
 		provisioner.store_creds(wifi_ssid, wifi_pass);

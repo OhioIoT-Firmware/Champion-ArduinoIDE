@@ -4,20 +4,7 @@
 
 
 /*
-	OTA *reporting* lives here, in the controller — not in the OTA module.
-
-	The OTA module is a pure, transport-agnostic state machine: it downloads,
-	flashes, and inspects partitions, but does not touch MQTT and does not
-	reboot (see ota.h).  Everything in this file is policy and messaging
-	convention layered on top of that state machine:
-
-	  - which topics progress/outcomes publish under (~/~/response/ota/...)
-	  - how chatty progress reporting is (OTA_PROGRESS_INCREMENT)
-	  - when to reboot after a successful download
-	  - boot-time accepted/rolled_back reporting
-
-	Split into its own translation unit purely to keep controller.cpp short;
-	same class, same boundary.
+	OTA "reporting" is handled in the controller.  It's not required for general OTA operation
 */
 
 #include "Arduino.h"
@@ -29,7 +16,6 @@
 
 
 // How often to publish OTA progress, in percentage increments.
-// Override with a build flag in platformio if you want something different.
 #ifndef OTA_PROGRESS_INCREMENT
     #define OTA_PROGRESS_INCREMENT 1
 #endif

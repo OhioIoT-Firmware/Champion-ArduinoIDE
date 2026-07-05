@@ -12,13 +12,18 @@ void WiFi_Tools::begin(const char * ssid, const char * pass) {
 	WiFi.persistent(false);
 	WiFi.onEvent(_event_handler);
 	Serial.println("\n\twifi connecting...");
+	_reconnect_timer = millis();
+	_is_connecting = true;                            
 	WiFi.begin(ssid, pass);
 }
 
 bool WiFi_Tools::reconnect() {
 
+	if (_is_connecting) return false;                 
+
 	if ((millis() - _reconnect_timer > RECONNECT_INTERVAL) && _should_reconnect) {
 		Serial.println("\n\treconnecting...\n");
+		_is_connecting = true;                        
 		WiFi.reconnect();
 		_reconnect_timer = millis();
 		return true;
@@ -36,6 +41,7 @@ void WiFi_Tools::_event_handler(WiFiEvent_t event, WiFiEventInfo_t info) {
 		// (logging, counter increments) on the main task, where heap work
 		// is safe.  the WiFi event task is not the place for NVS writes.
 		wifi_tools.is_connected = false;
+		wifi_tools._is_connecting = false;            
 		bool user_disconnected = info.wifi_sta_disconnected.reason == WIFI_REASON_ASSOC_LEAVE;
 		wifi_tools._should_reconnect = !(user_disconnected || wifi_tools._first_disconnect);
 		wifi_tools._first_disconnect = false;
@@ -44,6 +50,7 @@ void WiFi_Tools::_event_handler(WiFiEvent_t event, WiFiEventInfo_t info) {
 	if (event == ARDUINO_EVENT_WIFI_STA_GOT_IP) {
 		if (!wifi_tools.is_connected) Serial.println("\twifi connected...\n");
 		wifi_tools.is_connected = true;
+		wifi_tools._is_connecting = false;            
 	}
 
 }

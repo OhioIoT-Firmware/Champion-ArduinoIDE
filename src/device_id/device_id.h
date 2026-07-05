@@ -6,11 +6,9 @@
 
 #pragma once
 
-/*
-
-	the purpose of this library is to 
-
-*/
+#ifndef DEVICE_ID_LEN
+    #define DEVICE_ID_LEN 9
+#endif
 
 
 class Device_ID {

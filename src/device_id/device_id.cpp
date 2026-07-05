@@ -1,12 +1,12 @@
 
 
-
 #include "device_id/device_id.h"
 
 #include "Preferences.h"
 static Preferences _prefs;
 
 #include "Arduino.h"
+#include "esp_random.h"		// hardware RNG — see _create_code()
 
 
 Device_ID::Device_ID() {}
@@ -36,7 +36,7 @@ void Device_ID::get_or_set(char * buffer) {
 
 		} else {
 			
-			char code_holder[9];
+			char code_holder[DEVICE_ID_LEN];
 			_create_code(code_holder);
 			strcpy( buffer, code_holder );
 			_prefs.putString("deviceID", (const char *) buffer);
@@ -57,16 +57,12 @@ void Device_ID::get_or_set(char * buffer) {
 
 void Device_ID::_create_code(char * buffer) {
 
-	const char * character_options = "abcdedfghijklmnopqrstuvwxyz0123456789";
-	
-	for (int i = 0; i<8; i++) {
-		int selection = random(36);
-		Serial.print("\t\t\t\tthe selection: ");
-		Serial.println(selection);
-		buffer[i] = character_options[selection];
+	const char * character_options = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+	for (int i = 0; i < DEVICE_ID_LEN - 1; i++) {
+		buffer[i] = character_options[esp_random() % 36];
 	}
 
-	buffer[8] = 0;
+	buffer[DEVICE_ID_LEN-1] = 0;
 
 }
-

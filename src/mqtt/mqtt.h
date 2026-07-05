@@ -11,7 +11,7 @@
 #include <PubSubClient.h>
 
 #define MQTT_RETRY_INTERVAL 3000
-#define MAX_DEVICE_ID_LENGTH 16
+#define MQTT_CLIENT_ID_LEN 24
 
 using MessageHandler    = void (*)(char *, char *);   // user's raw handler (terminal)
 using StdMessageHandler = bool (*)(char *, char *);   // framework handler; returns true if it claimed the message
@@ -35,7 +35,7 @@ class Mqtt {
         void publish(const char *, const char *);
         void publish(const char *, float);
         void publish(const char *, int);
-		// void publish(const char *, bool);
+		void publish(const char *, bool);
         void publish(const char *);
 
         // subscribe — four sources, all nullptr-terminated arrays of string
@@ -77,9 +77,9 @@ class Mqtt {
         unsigned long _retry_timer;
         bool _is_first_connect = true;
 
-        char _device_id[MAX_DEVICE_ID_LENGTH];
-        char _username[32]; // TODO: revisit - what do i want to do with the lengths
-        char _password[32];
+        char _device_id[MQTT_CLIENT_ID_LEN];
+        char _username[33];
+        char _password[33];
 
         // publish
         void _publish(const char *, const char *);

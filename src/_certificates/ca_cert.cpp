@@ -2,8 +2,6 @@
 
 #include "_certificates/ca_cert.h"
 
-// TODO: convert to raw string?
-
 const char OHIOIOT_CA_CERT[] = "-----BEGIN CERTIFICATE-----\n"
 	"MIIFazCCA1OgAwIBAgIRAIIQz7DSQONZRGPgu2OCiwAwDQYJKoZIhvcNAQELBQAw\n"
 	"TzELMAkGA1UEBhMCVVMxKTAnBgNVBAoTIEludGVybmV0IFNlY3VyaXR5IFJlc2Vh\n"

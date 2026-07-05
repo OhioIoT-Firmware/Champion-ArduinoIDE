@@ -10,7 +10,6 @@
 static Preferences _prefs;
 
 
-// CALLED IN STD_RESPONSES
 void OTA::set_ota_pending() {
 	/*
 		we just successfully did the update.  so, note it in nvs so the device
@@ -21,14 +20,10 @@ void OTA::set_ota_pending() {
     _prefs.putBool("ota_pending", true);
     _prefs.end();
 
-	// storage.set_flag("ota", "ota_pending");
 }
 
 
 
-
-// USED IN MQTT_TOOLS
-// USED IN STANDARD_RESPONSES
 void OTA::mark_firmware_as_valid() {
     _prefs.begin("ota", false);  // Open namespace "ota" in RW mode
     if (_prefs.isKey("ota_pending")) {
@@ -42,13 +37,6 @@ void OTA::mark_firmware_as_valid() {
     }
     _prefs.end();
 
-	// if (storage.get_flag("ota", "ota_pending")) {
-	// 	storage.clear_flag("ota", "ota_pending");
-	// } else {
-	// 	Serial.println("\tno ota flags to clear");
-	// }
-
-    // NOTE: I have not yet verified that this function is doing anything!
     esp_err_t err = esp_ota_mark_app_valid_cancel_rollback();
     if (err != ESP_OK) {    Serial.print("\txx filed to mark app as valid: "); Serial.println(esp_err_to_name(err)); } 
     else {                  Serial.println("\tfirmware marked as valid");    }
@@ -60,7 +48,6 @@ void OTA::_mark_firmware_as_valid_if_appropriate() {
 
 	/**
 	 * 		if we' renot requiring manual acceptance, then we can mark it valid after mqtt connects.
-	 * 
 	 * 		this should be getting called in main after mqtt connects.
 	 */
 
@@ -73,10 +60,8 @@ void OTA::_mark_firmware_as_valid_if_appropriate() {
 
 
 
-// USED IN MQTT_TOOLS
-// USED IN WIFI_TOOLS
 void OTA::rollback_and_reboot() {
-    Serial.println("\tSHOULD BE CALLING FOR ROLLBACK\n\n");
+    Serial.println("\tCALLING FOR ROLLBACK ---\n\n");
 
     // Re-arm the boot-report gate. The next boot's reporter only speaks if
     // ota_pending is set; a commanded rollback (manual, or one issued after
@@ -93,7 +78,6 @@ void OTA::rollback_and_reboot() {
 
 
 
-// CALLED IN STD_SCHEDULE
 void OTA::rollback_if_not_verified_within_time() {
 
     
@@ -130,11 +114,7 @@ bool OTA::_update_is_pending_validation() {
     }
     if (_prefs.isKey("ota_pending")) {
         status = _prefs.getBool("ota_pending", false);
-		// TODO:  can't remember why this is here
-    } else {
-        // Serial.println("\t.. no OTA pending (normal boot)");
-        return false;
-    }
+    } 
     _prefs.end();
     return status;
 }
@@ -224,18 +204,3 @@ bool OTA::was_rolled_back() {
 }
 
 
-
-
-
-
-
-// USED IN STANDARD_RESPONSES
-// void OTA::mark_firmware_as_valid_and_delete() {
-//     _clear_ota_status();
-//     esp_err_t err = esp_ota_mark_app_valid_cancel_rollback();
-//     if (err != ESP_OK) {    Serial.print("\txx filed to mark app as valid: "); Serial.println(esp_err_to_name(err)); } 
-//     else {                  Serial.println("\t.. marked new firmware as valid");    }
-//     esp_err_t err2 = esp_ota_erase_last_boot_app_partition();
-//     if (err2 != ESP_OK) {    Serial.print("\txx filed to mark app as valid: "); Serial.println(esp_err_to_name(err2)); } 
-//     else {                  Serial.println("\t.. marked new firmware as valid");    }
-// }

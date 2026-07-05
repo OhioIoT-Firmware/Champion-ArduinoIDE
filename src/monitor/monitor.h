@@ -17,12 +17,10 @@ class Monitor {
 
 		void setup(int);
 
-		// void send_all();
 		void send_heartbeat();
 		void refresh_counters();
 
 		// boot packet — static device facts
-		// void send_boot_packet();
 		void send_identity();
 		void send_firmware();
 		void send_session();
@@ -31,8 +29,6 @@ class Monitor {
 		// heartbeat payloads — only what actually changes
 		void send_counters();
 		void send_runtime();
-
-		// bool boot_packet_sent = false;
 
 
 	private:

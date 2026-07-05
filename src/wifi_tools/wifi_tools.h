@@ -39,6 +39,7 @@ class WiFi_Tools {
         bool _should_reconnect = true;
         bool _first_disconnect = true;
         bool _event_logging_enabled = false;
+		bool _is_connecting = false;			
 
         unsigned long _reconnect_timer;
         unsigned long _status_timer;

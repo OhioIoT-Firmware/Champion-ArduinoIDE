@@ -20,11 +20,10 @@ void Mqtt::publish(const char * topic, int number) {
     _publish(topic, payload);
 }
 
-// void Mqtt::publish(const char * topic, bool state) {
-//     char payload[32];
-//     itoa(state, payload, 1);
-//     _publish(topic, payload);
-// }
+void Mqtt::publish(const char * topic, bool payload) {
+    _publish(topic, payload ? "true" : "false");
+}
+
 
 void Mqtt::publish(const char * topic) {
     _publish(topic, "");

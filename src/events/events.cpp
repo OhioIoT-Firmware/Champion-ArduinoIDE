@@ -52,6 +52,36 @@ void Events::increment(const char * key) {
 }
 
 
+void Events::increment_ram(const char * key) {
+
+	// RAM-only bump for events that can fire every few seconds (wifi retries
+	// while offline, drops on a flapping AP).  A device stuck offline
+	// overnight would otherwise putUInt the same NVS key thousands of times —
+	// wear leveling or not, that's needless flash wear.  the pending value is
+	// written by flush() on the next clean reconnect (or before a restart).
+	// trade-off: if the device reboots before ever reconnecting, the pending
+	// counts are lost.  acceptable — these are diagnostics, not billing.
+
+	if (strcmp(key, "wifi_retries") == 0) { ++wifi_retries; _wifi_retries_dirty = true; return; }
+	if (strcmp(key, "wifi_drops")   == 0) { ++wifi_drops;   _wifi_drops_dirty   = true; return; }
+
+	// key isn't one of the high-frequency ones — fall back to the
+	// write-through path so callers can't silently lose an event.
+	increment(key);
+}
+
+
+void Events::flush() {
+
+	if (!_wifi_retries_dirty && !_wifi_drops_dirty) return;		// nothing pending — no NVS touch at all
+
+	_prefs.begin("events");
+	if (_wifi_retries_dirty) { _prefs.putUInt("wifi_retries", wifi_retries); _wifi_retries_dirty = false; }
+	if (_wifi_drops_dirty)   { _prefs.putUInt("wifi_drops",   wifi_drops);   _wifi_drops_dirty   = false; }
+	_prefs.end();
+}
+
+
 
 void Events::reset_all() {
 
@@ -67,4 +97,9 @@ void Events::reset_all() {
 	_prefs.begin("events");
 	_prefs.clear();          // wipes namespace; next increment recreates keys
 	_prefs.end();
+
+	// drop any pending RAM-only increments too — otherwise a later flush()
+	// would write stale pre-reset counts right back into NVS.
+	_wifi_retries_dirty = false;
+	_wifi_drops_dirty   = false;
 }

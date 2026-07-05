@@ -16,34 +16,11 @@ Monitor monitor;
 void Monitor::setup(int interval) {
 	events.load_all();
 	events.increment("starts");
-	// metrics.check_all();
+	metrics.check_all();		// here for brownout detection in controller
 	_interval = interval;
 }
 
 
-// Ships a complete state snapshot — boot packet plus a full sweep of
-// dynamic data.  Called at first connect (gated externally by the
-// controller via boot_packet_sent) and again whenever we want a fresh
-// full-state publish, e.g. after clearing event counters.
-//
-// No internal gate on send_boot_packet — every call to send_all ships
-// everything.  The first-boot-only behavior comes from the controller's
-// loop choosing when to call this.
-// void Monitor::send_all() {
-
-// 	// _heartbeat_timer = millis();
-
-// 	metrics.check_all();
-
-// 	send_identity();
-// 	send_session();
-// 	send_network();
-// 	send_counters();
-// 	send_runtime();
-
-// 	// boot_packet_sent = true;
-
-// }
 
 
 // Heartbeat only ships what can have changed.  Static stuff (chip info,
@@ -86,15 +63,7 @@ void Monitor::send_heartbeat() {
 }
 
 
-// ─────────────────────────────────────────────────────────────────────
-//  BOOT PACKET — session-static facts, sent once per power cycle
-// ─────────────────────────────────────────────────────────────────────
 
-// void Monitor::send_boot_packet() {
-// 	send_identity();
-// 	send_session();
-// 	boot_packet_sent = false;
-// }
 
 void Monitor::refresh_counters() {
 	send_session();

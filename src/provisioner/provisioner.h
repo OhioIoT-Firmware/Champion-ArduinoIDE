@@ -26,10 +26,6 @@ class Provisioner {
 
         void clear_creds();
 
-
-        // TODO.  we need two functions here.  one is (we pass in WIFI_SSID and WIFI_PASS and let the provisioner know if we have creds or need to provision?)
-        // THe other is where we just go straight to provisionig, based on a pin pull or something.
-
     private:
         WebServer _web_server{80};
         DNSServer _dns_server;
