@@ -42,7 +42,7 @@ To override the CA_CERT to point your device to a different MQTT broker, create 
 // Override the following with build flags in platformio if you want something different
 
 #ifndef MQTT_HOST
-    #define MQTT_HOST "test-mqtt.ohioiot.com"
+    #define MQTT_HOST "mqtt.ohioiot.com"
 #endif
 
 #ifndef MQTT_PORT

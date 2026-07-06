@@ -17,7 +17,7 @@
 
 // How often to publish OTA progress, in percentage increments.
 #ifndef OTA_PROGRESS_INCREMENT
-    #define OTA_PROGRESS_INCREMENT 1
+    #define OTA_PROGRESS_INCREMENT 2
 #endif
 
 

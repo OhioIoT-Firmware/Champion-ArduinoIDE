@@ -24,7 +24,7 @@
 
 
 #ifndef OTA_HOST
-    #define OTA_HOST "https://test-ota.ohioiot.com"
+    #define OTA_HOST "https://ota.ohioiot.com"
 #endif
 
 #include <esp_err.h>

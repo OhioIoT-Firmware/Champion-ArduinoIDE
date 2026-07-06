@@ -23,6 +23,7 @@ class Events
 		void increment(const char *);		// bumps RAM value AND writes NVS immediately — for rare, edge-triggered events
 		void increment_ram(const char *);	// bumps RAM value only — for high-frequency events (e.g. wifi retries while offline)
 		void flush();						// writes any RAM-only increments to NVS; no-op if nothing is pending
+		void reset_all();
 
 		unsigned int starts;
 		unsigned int wifi_brown_outs;
