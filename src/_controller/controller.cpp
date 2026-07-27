@@ -95,8 +95,8 @@ void Controller::setup(const char * wifi_ssid, const char * wifi_pass, const cha
 
 	wifi_tools.begin(wifi_ssid, wifi_pass);
 
-	Serial.print("\tusing MQTT host: ");	Serial.println(MQTT_HOST);
-	Serial.print("\tusing MQTT port: ");	Serial.println(MQTT_PORT);
+	// Serial.print("\tusing MQTT host: ");	Serial.println(MQTT_HOST);
+	// Serial.print("\tusing MQTT port: ");	Serial.println(MQTT_PORT);
 
 	mqtt.setup(MQTT_HOST, MQTT_PORT, mqtt_user, mqtt_pass, deviceID, CA_CERT); 
 
