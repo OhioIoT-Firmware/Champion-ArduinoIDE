@@ -19,7 +19,7 @@ The four values at the top of the sketch:
 ```c
 #define WIFI_SSID  "your-wifi-name"
 #define WIFI_PASS  "your-wifi-password"
-#define MQTT_USER  "your-mqtt-user"		// found in the Settings tab of the OhioIoT app
+#define MQTT_USER  "your-mqtt-user"			// found in the Settings tab of the OhioIoT app
 #define MQTT_PASS  "your-mqtt-password"		// found in the Settings tab of the OhioIoT app
 ```
 
