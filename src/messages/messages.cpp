@@ -44,7 +44,7 @@ bool Messages::main_handler(char* topic, char* payload) {
 	char third_elem[40], fourth_elem[40], fifth_elem[40], error[128];
 	messages._get_segment(topic, 2, third_elem);
 	messages._get_segment(topic, 3, fourth_elem);
-
+	messages._get_segment(topic, 4, fifth_elem);
 
 
 	// SETTINGS UPDATES ++++++++++++++++++++++++++++++++++++++
@@ -83,7 +83,6 @@ bool Messages::main_handler(char* topic, char* payload) {
 
 				char response_topic[100] = "~/~/response/command/";
 
-				messages._get_segment(topic, 4, fifth_elem);
 				if (fifth_elem[0]) {
 					strcat(response_topic, fifth_elem);
 					strcat(response_topic, "/");
