@@ -4,21 +4,8 @@ The **Champion** tier of the OhioIoT device firmware SDK for ESP32.
 
 This code base is designed to help you connect your device to the OhioIoT cloud-based MQTT broker.
 
-This code is subject to ongoing development. If you have any feedback or questions, please send a note from the web page: [ohioiot.com/contact](https://ohioiot.com/contact).
+This code is subject to ongoing development. If you have any feedback or questions, please send a note from the contact page on the website: [ohioiot.com/contact](https://ohioiot.com/contact).
 
-```
-// define your variables
-
-void setup() {
-    controller.setup(WIFI_SSID, WIFI_PASS, MQTT_USER, MQTT_PASS);
-    // add your own code
-}
-
-void loop()  {
-    controller.loop();
-    // add your own code
-}
-```
 
 ## Quick Start
 
@@ -32,10 +19,8 @@ The four values at the top of the sketch:
 ```c
 #define WIFI_SSID  "your-wifi-name"
 #define WIFI_PASS  "your-wifi-password"
-
-// MQTT_USER and MQTT_PASS are in the Settings tab of the OhioIoT app
-#define MQTT_USER  "your-mqtt-user"
-#define MQTT_PASS  "your-mqtt-password"
+#define MQTT_USER  "your-mqtt-user"		// found in the Settings tab of the OhioIoT app
+#define MQTT_PASS  "your-mqtt-password"		// found in the Settings tab of the OhioIoT app
 ```
 
 ## What's Included
