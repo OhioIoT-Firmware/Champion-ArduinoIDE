@@ -39,7 +39,7 @@ class Provisioner {
         void _set_portal_routes();
         void _set_other_routes();
 
-        int _provisioning_pin;
+        int _provisioning_pin = -1;
         unsigned long _provisioning_timeout;
         unsigned long _pin_timer;
         bool _timer_is_on = false;

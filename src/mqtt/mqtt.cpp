@@ -3,11 +3,7 @@
 #include "mqtt/mqtt.h"
 #include "Arduino.h"
 
-// #include credentials.h here to allow Arduino IDE users to toggle 
-// ALLOW_INSECURE_MQTT in their credentials.h.  PlatformIO users
-// can still use the build flag.
 
-// #include "credentials.h"
 
 
 

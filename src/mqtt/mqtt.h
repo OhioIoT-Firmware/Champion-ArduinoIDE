@@ -38,6 +38,8 @@ class Mqtt {
 		void publish(const char *, bool);
         void publish(const char *);
 
+        void publish_namespaces();
+
         // subscribe — four sources, all nullptr-terminated arrays of string
         // literals.  nothing is copied; topics are (re)built and subscribed
         // at every connect inside _subscribe_to_all().

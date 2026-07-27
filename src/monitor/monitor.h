@@ -36,6 +36,7 @@ class Monitor {
 		int _interval;
 		uint8_t _heartbeat_counter = 0;
 		unsigned long _heartbeat_timer = 0;
+		bool _mqtt_was_connected = false;
 
 };
 

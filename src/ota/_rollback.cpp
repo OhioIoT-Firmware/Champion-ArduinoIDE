@@ -11,10 +11,15 @@ static Preferences _prefs;
 
 
 void OTA::set_ota_pending() {
-	/*
-		we just successfully did the update.  so, note it in nvs so the device
-		knows to rollback if necessary after boot
-	*/
+
+    /*
+        An OTA just landed, OR a rollback was just commanded. Either way the
+        next boot owes the outside world a report. Partition state can't carry
+        this: after a rollback we boot the old image, which is already VALID
+        and looks like a normal boot.
+
+        Cleared by mark_firmware_as_valid() once the report is made.
+    */
 
     _prefs.begin("ota", false);  // Open namespace "ota" in RW mode
     _prefs.putBool("ota_pending", true);
@@ -63,16 +68,15 @@ void OTA::_mark_firmware_as_valid_if_appropriate() {
 void OTA::rollback_and_reboot() {
     Serial.println("\tCALLING FOR ROLLBACK ---\n\n");
 
-    // Re-arm the boot-report gate. The next boot's reporter only speaks if
-    // ota_pending is set; a commanded rollback (manual, or one issued after
-    // the image was already accepted) would otherwise have cleared it and
-    // boot silently. Harmless when already set (the timeout path) — it just
-    // keeps every rollback, however triggered, reporting on the next boot.
     set_ota_pending();
 
     esp_err_t err = esp_ota_mark_app_invalid_rollback_and_reboot();
-    if (err != ESP_OK) {    Serial.print("\txx failed to mark app as invalid and reboot: "); Serial.println(esp_err_to_name(err)); }
-    else {                  Serial.println("\t.. marked app as invalid and rebooting\n\n");    }
+
+    // Still here? Then it didn't reboot. Don't leave a healthy device armed
+    // to roll itself back on the next power cycle.
+    Serial.print("\txx failed to mark app as invalid and reboot: ");
+    Serial.println(esp_err_to_name(err));
+    // clear_ota_pending();
 }
 
 

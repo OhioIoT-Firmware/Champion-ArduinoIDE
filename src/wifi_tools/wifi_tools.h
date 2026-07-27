@@ -25,14 +25,19 @@ class WiFi_Tools {
 
         // returns true if a reconnect attempt was actually made on this call
         // (the call is internally timer-gated so most invocations are no-ops).
-        // ignore the return value if you don't care; the controller uses it
-        // to count retries.
+        // ignore the return value if you don't care -- the same answer is also
+        // published on reconnect_attempted below, which is what the controller
+        // reads when it counts retries.
         bool reconnect();
 
         void log_events();
         void log_status();
 
         bool is_connected = false;
+
+        // mirrors the return of the most recent reconnect() call, so a caller
+        // that ignored the return value can still ask after the fact.
+        bool reconnect_attempted = false;
 
     private:
 

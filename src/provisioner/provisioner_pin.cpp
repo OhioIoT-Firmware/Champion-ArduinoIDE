@@ -16,6 +16,10 @@ void Provisioner::set_pin(int pin, unsigned long timer) {
 
 bool Provisioner::pin_is_pulled() {
     
+    if (_provisioning_pin < 0) {
+        return false;
+    }
+
     if (!digitalRead(_provisioning_pin)) {
 
         if (!_timer_is_on) {

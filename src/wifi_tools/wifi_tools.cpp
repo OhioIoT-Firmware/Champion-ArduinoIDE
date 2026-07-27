@@ -19,6 +19,8 @@ void WiFi_Tools::begin(const char * ssid, const char * pass) {
 
 bool WiFi_Tools::reconnect() {
 
+	reconnect_attempted = false;
+
 	if (_is_connecting) return false;                 
 
 	if ((millis() - _reconnect_timer > RECONNECT_INTERVAL) && _should_reconnect) {
@@ -26,6 +28,7 @@ bool WiFi_Tools::reconnect() {
 		_is_connecting = true;                        
 		WiFi.reconnect();
 		_reconnect_timer = millis();
+		reconnect_attempted = true;
 		return true;
 	}
 	return false;

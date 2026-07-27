@@ -4,6 +4,20 @@
 #include "Arduino.h"
 
 
+void Mqtt::publish_namespaces() {
+    if (_command_namespaces == nullptr) return;
+
+    char payload[160] = "";
+
+    for (int i = 0; _command_namespaces[i] != nullptr; i++) {
+        if (i > 0) strcat(payload, ",");
+        strcat(payload, _command_namespaces[i]);
+    }
+
+    publish("~/~/status/cmd_ns", payload);
+}
+
+
 void Mqtt::publish(const char * topic, const char * payload) {
     _publish(topic, payload);
 }
