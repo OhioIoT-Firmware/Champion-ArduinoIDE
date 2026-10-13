@@ -64,7 +64,6 @@ void Mqtt::maintain() {
                 _subscribe_to_all();
 
             } else {
-                Serial.println("\txx failed to connect to mqtt");
                 is_connected = false;
                 _retry_timer = millis();
                 Serial.print("\txx failed to connect to mqtt, rc=");
