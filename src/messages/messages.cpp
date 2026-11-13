@@ -42,9 +42,9 @@ bool Messages::main_handler(char* topic, char* payload) {
 	messages._print_message(topic, payload);
 
 	char third_elem[40], fourth_elem[40], fifth_elem[40], error[128];
-	messages._get_segment(topic, 2, third_elem);
-	messages._get_segment(topic, 3, fourth_elem);
-	messages._get_segment(topic, 4, fifth_elem);
+	messages._get_segment(topic, 2, third_elem, sizeof(third_elem));
+	messages._get_segment(topic, 3, fourth_elem, sizeof(fourth_elem));
+	messages._get_segment(topic, 4, fifth_elem, sizeof(fifth_elem));
 
 
 	// SETTINGS UPDATES ++++++++++++++++++++++++++++++++++++++
@@ -81,15 +81,21 @@ bool Messages::main_handler(char* topic, char* payload) {
 
 				bool succeeded = (error[0] == '\0');
 
-				char response_topic[100] = "~/~/response/command/";
-
+				char response_topic[100];
+				const char * outcome = succeeded ? "success" : "fail";
+				int wrote;
 				if (fifth_elem[0]) {
-					strcat(response_topic, fifth_elem);
-					strcat(response_topic, "/");
+					wrote = snprintf(response_topic, sizeof(response_topic),
+					                 "~/~/response/command/%s/%s", fifth_elem, outcome);
+				} else {
+					wrote = snprintf(response_topic, sizeof(response_topic),
+					                 "~/~/response/command/%s", outcome);
 				}
-				strcat(response_topic, succeeded ? "success" : "fail");
-
-				mqtt.publish(response_topic, succeeded ? "" : error);
+				if (wrote < 0 || (size_t)wrote >= sizeof(response_topic)) {
+					Serial.println("\txx command response topic too long — not published");
+				} else {
+					mqtt.publish(response_topic, succeeded ? "" : error);
+				}
 				return true;
 			} else {
 				Serial.println("comamnd not claimed by the device");

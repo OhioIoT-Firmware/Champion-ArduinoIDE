@@ -4,6 +4,19 @@
 #include "Arduino.h"
 
 
+// Build a namespace topic. Returns false (and prints a warning) when the
+// name is too long to fit, so we never subscribe to a chopped topic.
+static bool _topic_fits(char * topic, size_t topic_len, const char * fmt, const char * name) {
+    int wrote = snprintf(topic, topic_len, fmt, name ? name : "");
+    if (wrote < 0 || (size_t)wrote >= topic_len) {
+        Serial.print("\txx namespace topic too long — skipped: ");
+        Serial.println(name ? name : "");
+        return false;
+    }
+    return true;
+}
+
+
 /*
     All four subscription sources are nullptr-terminated arrays of string
     literals supplied by the caller.  We store only the array pointers —
@@ -35,8 +48,8 @@ void Mqtt::set_settings_namespaces(const char ** groups) {
 
 // helper — apply the username/device_id template, log it, and subscribe.
 void Mqtt::_subscribe_one(const char * topic) {
-    char topic_build[100];
-    _build_topic(topic, topic_build);
+    char topic_build[MQTT_TOPIC_BUF];
+    if (!_build_topic(topic, topic_build, sizeof(topic_build))) return;
 
     Serial.print("\t.. subscribing to: ");
     Serial.println(topic_build);
@@ -68,18 +81,21 @@ void Mqtt::_subscribe_to_all() {
     char topic[80];
     if (_command_namespaces != nullptr) {
         for (int i=0; _command_namespaces[i] != nullptr; i++) {
-            snprintf(topic, sizeof(topic), "~/%s/command/+",   _command_namespaces[i]);
-            _subscribe_one(topic);
-            snprintf(topic, sizeof(topic), "~/%s/command/+/+", _command_namespaces[i]);
-            _subscribe_one(topic);
+            if (_topic_fits(topic, sizeof(topic), "~/%s/command/+", _command_namespaces[i])) {
+                _subscribe_one(topic);
+            }
+            if (_topic_fits(topic, sizeof(topic), "~/%s/command/+/+", _command_namespaces[i])) {
+                _subscribe_one(topic);
+            }
         }
     }
 
     // 4. settings namespaces — one topic per group:  ~/{group}/settings/+
     if (_settings_namespaces != nullptr) {
         for (int i=0; _settings_namespaces[i] != nullptr; i++) {
-            snprintf(topic, sizeof(topic), "~/%s/settings/+", _settings_namespaces[i]);
-            _subscribe_one(topic);
+            if (_topic_fits(topic, sizeof(topic), "~/%s/settings/+", _settings_namespaces[i])) {
+                _subscribe_one(topic);
+            }
         }
     }
 

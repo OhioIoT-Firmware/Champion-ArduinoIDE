@@ -26,7 +26,10 @@ void Metrics::_check_firmware(void) {
 	// image by the compiler, so it's present regardless of IDE.  Gathered
 	// first so it's always set, even if the hash read below fails.
 	const esp_app_desc_t * desc = esp_app_get_description();
-	snprintf(fw_built, sizeof(fw_built), "%s %s", desc->date, desc->time);
+	int built_len = snprintf(fw_built, sizeof(fw_built), "%s %s", desc->date, desc->time);
+	if (built_len < 0 || (size_t)built_len >= sizeof(fw_built)) {
+		Serial.println("\txx fw_built timestamp truncated");
+	}
 
 	// Serial.printf("\t   - fw_built: %s\n", fw_built);
 
@@ -35,14 +38,20 @@ void Metrics::_check_firmware(void) {
 	esp_err_t err = esp_partition_get_sha256(esp_ota_get_running_partition(), raw);
 
 	if (err != ESP_OK) {
-		strcpy(fw_hash, "unknown");
+		strlcpy(fw_hash, "unknown", sizeof(fw_hash));
 		Serial.printf("\t   - fw_hash: unavailable (%s)\n", esp_err_to_name(err));
 		return;
 	}
 
 	// format the 32 raw bytes as 64 lowercase hex chars
+	fw_hash[0] = '\0';
 	for (int i = 0; i < 32; i++) {
-		sprintf(&fw_hash[i * 2], "%02x", raw[i]);
+		size_t offset = (size_t)i * 2;
+		int wrote = snprintf(&fw_hash[offset], sizeof(fw_hash) - offset, "%02x", raw[i]);
+		if (wrote != 2) {
+			Serial.println("\txx fw_hash truncated");
+			break;
+		}
 	}
 	fw_hash[64] = '\0';
 

@@ -13,6 +13,20 @@ void ipToString(IPAddress ip, char* buffer, size_t bufferSize) {
 }
 
 
+static void _copy_text(char * dest, size_t dest_len, const char * src, const char * label) {
+	if (dest == nullptr || dest_len == 0) return;
+	if (src == nullptr) src = "";
+	size_t copied = strlcpy(dest, src, dest_len);
+	if (copied >= dest_len) {
+		Serial.print("\txx ");
+		Serial.print(label);
+		Serial.print(" truncated to ");
+		Serial.print(dest_len - 1);
+		Serial.println(" characters");
+	}
+}
+
+
 void Metrics::_check_wifi(void) {
 
     if (WiFi.status() != WL_CONNECTED) return; 
@@ -20,11 +34,8 @@ void Metrics::_check_wifi(void) {
 	ipToString(WiFi.localIP(), local_IP, sizeof(local_IP));
 	ipToString(WiFi.dnsIP(), dns_IP, sizeof(dns_IP));
 
-	strncpy(SSID, WiFi.SSID().c_str(), sizeof(SSID) - 1);
-	SSID[sizeof(SSID) - 1] = '\0';
-
-	strncpy(mac_address, WiFi.macAddress().c_str(), sizeof(mac_address) - 1);
-	mac_address[sizeof(mac_address) - 1] = '\0';
+	_copy_text(SSID, sizeof(SSID), WiFi.SSID().c_str(), "SSID");
+	_copy_text(mac_address, sizeof(mac_address), WiFi.macAddress().c_str(), "mac address");
 
 	// Serial.print("\t   - IP: ");      Serial.println(local_IP);
 	// Serial.print("\t   - SSID: ");    Serial.println(SSID);

@@ -9,9 +9,30 @@
 #endif
 
 #include <PubSubClient.h>
+#include <stddef.h>
 
-#define MQTT_RETRY_INTERVAL 3000
+#define MQTT_RETRY_INTERVAL 3000    // first wait after a failed connect, in ms. later waits double (see mqtt.cpp)
 #define MQTT_CLIENT_ID_LEN 24
+
+// Expanded topics (username + device id + the rest) are built into this.
+// Anything longer is dropped instead of overflowing the buffer.
+#define MQTT_TOPIC_BUF 180
+// PubSubClient's own packet buffer is 256 bytes. Anything larger — the topic,
+// the message, and about 7 bytes of MQTT header — is dropped, and the library
+// does not say so. 1024 leaves roughly 1000 bytes for the topic plus the body,
+// which covers a normal JSON payload (a few dozen short fields) after a
+// realistic topic. The extra RAM is under a kilobyte; an ESP32 has a few
+// hundred kilobytes of heap, and WiFi plus TLS already use much more than this.
+//
+// One knob. A build flag wins over the number below:
+//   PlatformIO:  -D MQTT_BUFFER_SIZE=2048
+//   Arduino IDE: the same -D line in build_opt.h next to the sketch,
+//                or change the number here.
+// It has to be set while this module is compiled. A #define in the sketch
+// alone does not reach mqtt.cpp.
+#ifndef MQTT_BUFFER_SIZE
+#define MQTT_BUFFER_SIZE 1024
+#endif
 
 using MessageHandler    = void (*)(char *, char *);   // user's raw handler (terminal)
 using StdMessageHandler = bool (*)(char *, char *);   // framework handler; returns true if it claimed the message
@@ -73,11 +94,23 @@ class Mqtt {
         
         PubSubClient _mqtt_client;
 
-        void _build_topic(const char * topic, char * output);
+        // Writes the expanded topic into output. Returns false (and leaves
+        // output empty) when the topic does not fit.
+        bool _build_topic(const char * topic, char * output, size_t output_len);
         
-        // connect
-        unsigned long _retry_timer;
+        // connect — exponential backoff between attempts. the wait is
+        // counted with millis() so loop() keeps running between tries.
+        unsigned long _retry_timer = 0;
+        unsigned long _retry_base_ms = MQTT_RETRY_INTERVAL;   // next wait before jitter
+        unsigned long _retry_wait_ms = 0;                     // jittered wait we're counting
+        bool _retry_waiting = false;
         bool _is_first_connect = true;
+
+        char _device_id[MQTT_CLIENT_ID_LEN] = {};
+        char _username[33] = {};
+        char _password[33] = {};
+        void _schedule_retry();
+        void _reset_retry();
 
         char _device_id[MQTT_CLIENT_ID_LEN];
         char _username[33];

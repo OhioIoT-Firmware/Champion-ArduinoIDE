@@ -124,6 +124,7 @@ void Controller::setup(const char * wifi_ssid, const char * wifi_pass, const cha
 	messages.set_restart_handler([](const char* code) {
 		Serial.println("\n\t### RESTARTING ###\n");
 		events.flush();		// persist any RAM-only counts before we go down; no-op if nothing pending
+		WiFi.disconnect();	// tell the router we left, so the next boot isn't a stale session
 		delay(100);
 		ESP.restart();
 	});
@@ -248,7 +249,7 @@ void Controller::loop() {
 
 	// clean reconnect — persist any retry/drop counts accumulated in RAM
 	// while we were offline.  one NVS write per outage instead of one per
-	// 10-second retry attempt.
+	// retry attempt.
 	if (!wifi_was_connected && wifi_tools.is_connected) {
 		events.flush();
 	}

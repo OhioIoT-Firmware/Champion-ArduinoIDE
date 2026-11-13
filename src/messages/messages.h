@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stddef.h>
+
 
 /*
 	Handler types.  Named for what they do, not how many arguments they take —
@@ -84,7 +86,7 @@ class Messages {
 		ActionHandler    _ota_rollback_handler  = nullptr;
 
 		void _print_message(char * topic, char * message);
-		void _get_segment(char * topic, int index, char * result);
+		void _get_segment(char * topic, int index, char * result, size_t result_len);
 
 };
 

@@ -17,6 +17,9 @@ Device_ID device_id;
 
 void Device_ID::get_or_set(char * buffer) {
 
+	if (buffer == nullptr) return;
+	buffer[0] = '\0';
+
 	if ( !_prefs.begin("id", false) ) {
 		Serial.println("\t\tfailed to open the 'id' namespace");
 	} else {
@@ -24,7 +27,11 @@ void Device_ID::get_or_set(char * buffer) {
 
 		if ( _prefs.isKey("deviceID") ) {
 
-			strcpy( buffer, _prefs.getString("deviceID").c_str() );
+			String stored = _prefs.getString("deviceID");
+			size_t copied = strlcpy(buffer, stored.c_str(), DEVICE_ID_LEN);
+			if (copied >= DEVICE_ID_LEN) {
+				Serial.println("\txx stored deviceID was too long and was truncated");
+			}
 
 			// #ifdef SHOW_LOGS
 
@@ -38,7 +45,7 @@ void Device_ID::get_or_set(char * buffer) {
 			
 			char code_holder[DEVICE_ID_LEN];
 			_create_code(code_holder);
-			strcpy( buffer, code_holder );
+			strlcpy(buffer, code_holder, DEVICE_ID_LEN);
 			_prefs.putString("deviceID", (const char *) buffer);
 
 			Serial.print("\t\tno 'deviceID' key existed.  id created: ");

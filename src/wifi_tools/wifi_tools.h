@@ -4,7 +4,8 @@
 
 #include <WiFi.h>
 
-#define RECONNECT_INTERVAL 10000
+#define RECONNECT_INTERVAL 2000   // first retry, ms; doubles each miss up to RECONNECT_MAX
+#define RECONNECT_MAX      60000  // longest wait between retries, ms
 #define STATUS_LOG_INTERVAL 1000
 
 #ifndef WIFI_SSID_LEN
@@ -28,6 +29,8 @@ class WiFi_Tools {
         // ignore the return value if you don't care -- the same answer is also
         // published on reconnect_attempted below, which is what the controller
         // reads when it counts retries.
+        // first try is about 2s after the core's own retry, then 4, 8, 16...
+        // up to 60s. getting an IP starts the wait back at 2s.
         bool reconnect();
 
         void log_events();
@@ -41,13 +44,16 @@ class WiFi_Tools {
 
     private:
 
-        bool _should_reconnect = true;
-        bool _first_disconnect = true;
+        bool _should_reconnect = false;
+        bool _first_disconnect = true;   // the core retries the first disconnect after boot once
         bool _event_logging_enabled = false;
-		// bool _is_connecting = false;			
 
-        unsigned long _reconnect_timer;
+        unsigned long _reconnect_timer = 0;
+        unsigned long _backoff_ms = RECONNECT_INTERVAL;
         unsigned long _status_timer;
+
+        char _ssid[WIFI_SSID_LEN] = "";
+        char _pass[WIFI_PASS_LEN] = "";
 
         static void _event_handler(WiFiEvent_t, WiFiEventInfo_t);
         void _log_event(WiFiEvent_t, WiFiEventInfo_t);

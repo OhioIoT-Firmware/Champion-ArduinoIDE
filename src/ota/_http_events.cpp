@@ -3,6 +3,7 @@
 #include "ota/ota.h"
 
 #include "Arduino.h"
+#include "wifi_tools/serial_mask.h"
 #include "esp_http_client.h"
 
 
@@ -30,7 +31,23 @@ esp_err_t OTA::_http_event_handler(esp_http_client_event_t * evt) {
             break;
 
         case HTTP_EVENT_ON_HEADER:
-            Serial.printf(">> header: %s: %s\n", evt->header_key, evt->header_value);
+            // Content-Length and the other ordinary headers stay visible.
+            // Authorization, Cookie, and anything named like a token or
+            // key is masked — those values are secrets if a server sends them.
+            if (name_is_secret(evt->header_key)) {
+                char masked[16];
+                mask_secret(evt->header_value, masked, sizeof(masked));
+                Serial.printf(">> header: %s: %s\n", evt->header_key, masked);
+            } else {
+                // A redirect Location (or any other header) can echo the
+                // download URL, which still has ?auth_key= in it.
+                char scrubbed[256];
+                if (evt->header_value && mask_text_secrets(evt->header_value, scrubbed, sizeof(scrubbed))) {
+                    Serial.printf(">> header: %s: %s\n", evt->header_key, scrubbed);
+                } else {
+                    Serial.printf(">> header: %s: %s\n", evt->header_key, evt->header_value);
+                }
+            }
             if (strcasecmp(evt->header_key, "Content-Length") == 0) {
                 total_bytes = atoi(evt->header_value);
             }

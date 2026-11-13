@@ -3,8 +3,26 @@
 #include "settings/settings.h"
 #include "Arduino.h"
 #include "Preferences.h"
+#include "wifi_tools/serial_mask.h"
 
 static Preferences _prefs;
+
+// Print a setting value.  threshold / mode / sleep_secs stay readable.
+// A value whose name is a password, token, or key is masked.
+static void _println_setting_value(const char * key, const char * value) {
+	if (name_is_secret(key)) {
+		char masked[16];
+		mask_secret(value, masked, sizeof(masked));
+		Serial.println(masked);
+		return;
+	}
+	char scrubbed[96];
+	if (value && mask_text_secrets(value, scrubbed, sizeof(scrubbed))) {
+		Serial.println(scrubbed);
+	} else {
+		Serial.println(value);
+	}
+}
 
 Settings::Settings() {}
 
@@ -76,7 +94,7 @@ void Settings::begin(SettingRow * table, SettingsChangedHandler on_change) {
 			Serial.print("\t.. '");
 			Serial.print(_table[i].key);
 			Serial.print("' loaded from flash: ");
-			Serial.println(_table[i].buffer);
+			_println_setting_value(_table[i].key, _table[i].buffer);
 
 		} else {
 
@@ -85,7 +103,7 @@ void Settings::begin(SettingRow * table, SettingsChangedHandler on_change) {
 			Serial.print("\t.. '");
 			Serial.print(_table[i].key);
 			Serial.print("' using default: ");
-			Serial.println(_table[i].buffer);
+			_println_setting_value(_table[i].key, _table[i].buffer);
 		}
 	}
 
@@ -122,6 +140,11 @@ bool Settings::set(const char * key, const char * value) {
 		return false;
 	}
 
+	if (value == nullptr) {
+		Serial.println("\txx settings: missing value — update refused");
+		return false;
+	}
+
 	if (strlen(value) >= SETTINGS_BUF_SIZE) {
 		Serial.print("\txx settings: value for '");
 		Serial.print(key);
@@ -131,7 +154,7 @@ bool Settings::set(const char * key, const char * value) {
 		return false;
 	}
 
-	strcpy(_table[index].buffer, value);
+	strlcpy(_table[index].buffer, value, SETTINGS_BUF_SIZE);
 
 	_prefs.begin(SETTINGS_NAMESPACE, false);
 	_prefs.putString(key, value);
@@ -140,7 +163,7 @@ bool Settings::set(const char * key, const char * value) {
 	Serial.print("\t.. setting updated '");
 	Serial.print(key);
 	Serial.print("' = ");
-	Serial.println(value);
+	_println_setting_value(key, value);
 
 	if (_on_change) _on_change();
 
@@ -220,8 +243,20 @@ void Settings::_report_failure(const char * buffer, const char * detail) {
 	char text[96];
 	snprintf(text, sizeof(text), "setting '%s': %s ('%s')", key, detail, buffer);
 
+	// The cloud inbox still gets the original text (the app already has
+	// this value).  The serial line hides it when the setting is a secret.
 	Serial.print("\txx ");
-	Serial.println(text);
+	if (name_is_secret(key)) {
+		char masked[16];
+		mask_secret(buffer, masked, sizeof(masked));
+		char hidden[96];
+		snprintf(hidden, sizeof(hidden), "setting '%s': %s ('%s')", key, detail, masked);
+		Serial.println(hidden);
+	} else {
+		char scrubbed[128];
+		if (mask_text_secrets(text, scrubbed, sizeof(scrubbed))) Serial.println(scrubbed);
+		else Serial.println(text);
+	}
 
 	if (_on_failure) _on_failure(text);
 }
@@ -277,7 +312,7 @@ void Settings::print() {
 		Serial.print("\t   ");
 		Serial.print(_table[i].key);
 		Serial.print(" = ");
-		Serial.println(_table[i].buffer);
+		_println_setting_value(_table[i].key, _table[i].buffer);
 	}
 
 	Serial.println("\t=================\n");

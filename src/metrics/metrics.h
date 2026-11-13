@@ -46,7 +46,7 @@ class Metrics {
 
 		// wifi
 		char local_IP[20];
-		char SSID[20];
+		char SSID[33];			// 32-character Wi-Fi maximum, plus the ending null
 		char dns_IP[20];
 		char mac_address[20];
 

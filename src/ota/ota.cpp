@@ -3,6 +3,7 @@
 #include "ota/ota.h"
 
 #include "Arduino.h"
+#include "wifi_tools/serial_mask.h"
 
 #include "esp_https_ota.h"
 
@@ -80,15 +81,34 @@ bool OTA::update_firmware(const char * group_name, const char * auth_key) {
         return false;
     }
 
+    int url_len = snprintf(_OTA_HOST, sizeof(_OTA_HOST), "%s/download/%s?auth_key=%s",
+                           OTA_HOST, group_name, key_to_use);
+    if (url_len < 0 || (size_t)url_len >= sizeof(_OTA_HOST)) {
+        Serial.println("\txxx OTA aborted: download URL is too long");
+        return false;
+    }
+
     // Remember the group across the impending reboot so the next boot can
     // report accepted/rolled_back tagged with the correct group.
+    // Done only after the URL fits, so a rejected update does not overwrite
+    // the group name from the previous attempt.
     save_ota_group(group_name);
 
     snprintf(_OTA_HOST, sizeof(_OTA_HOST), "%s/download/%s?auth_key=%s",
              OTA_HOST, group_name, key_to_use);
 
+    // _OTA_HOST still holds the real key — the HTTP client needs it.
+    // Serial gets the same address with the key masked, so a log, a
+    // screenshot, or a pasted forum post does not leak it.  The tail
+    // (or "(set)") is enough to see that a key was configured.
+    char masked_key[16];
+    mask_secret(key_to_use, masked_key, sizeof(masked_key));
     Serial.print("\ttotal url: ");
-    Serial.println(_OTA_HOST);
+    Serial.print(OTA_HOST);
+    Serial.print("/download/");
+    Serial.print(group_name);
+    Serial.print("?auth_key=");
+    Serial.println(masked_key);
     Serial.println("\n\t.. starting OTA");
 
     _http_config = {};
