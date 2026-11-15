@@ -17,13 +17,13 @@ void Messages::_print_message(char * topic, char * payload) {
 	// is still printed in full.
 	char route[40];
 	char name[40];
-	_get_segment(topic, 2, route);
+	_get_segment(topic, 2, route, sizeof(route));
 
 	bool hide = false;
 	if (strcmp(route, "ota") == 0) {
 		hide = true;
 	} else if (strcmp(route, "settings") == 0 || strcmp(route, "command") == 0) {
-		_get_segment(topic, 3, name);
+		_get_segment(topic, 3, name, sizeof(name));
 		hide = name_is_secret(name);
 	}
 

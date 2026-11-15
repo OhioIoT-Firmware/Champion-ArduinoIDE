@@ -112,10 +112,6 @@ class Mqtt {
         void _schedule_retry();
         void _reset_retry();
 
-        char _device_id[MQTT_CLIENT_ID_LEN];
-        char _username[33];
-        char _password[33];
-
         // publish
         void _publish(const char *, const char *);
 

@@ -5,7 +5,6 @@
 #include "Arduino.h"
 #include <esp_ota_ops.h>
 #include <esp_partition.h>
-#include <esp_app_desc.h>
 
 
 // check once when Metrics fires up, and then not again.
@@ -25,7 +24,8 @@ void Metrics::_check_firmware(void) {
 	// human-readable build timestamp — compile date + time baked into the
 	// image by the compiler, so it's present regardless of IDE.  Gathered
 	// first so it's always set, even if the hash read below fails.
-	const esp_app_desc_t * desc = esp_app_get_description();
+	// core 2.0.17 names this esp_ota_get_app_description
+	const esp_app_desc_t * desc = esp_ota_get_app_description();
 	int built_len = snprintf(fw_built, sizeof(fw_built), "%s %s", desc->date, desc->time);
 	if (built_len < 0 || (size_t)built_len >= sizeof(fw_built)) {
 		Serial.println("\txx fw_built timestamp truncated");
