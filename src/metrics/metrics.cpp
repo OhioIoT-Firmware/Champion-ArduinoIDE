@@ -24,7 +24,6 @@ void Metrics::check_dynamic() {
 
 	_check_rssi();
 	_check_memory();
-	// _check_wifi();
 	_check_uptime();
 
 }

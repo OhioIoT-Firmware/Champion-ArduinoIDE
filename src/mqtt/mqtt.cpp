@@ -76,9 +76,9 @@ void Mqtt::setup(const char * mqtt_host, int mqtt_port, const char * username, c
     // it, and only when it returns true. Doing this after connect can leave
     // getBufferSize() looking right while publish still refuses the message.
     if (_mqtt_client.setBufferSize(MQTT_BUFFER_SIZE)) {
-        Serial.print("\tmqtt packet buffer: ");
-        Serial.print((unsigned)_mqtt_client.getBufferSize());
-        Serial.println(" bytes");
+        // Serial.print("\tmqtt packet buffer: ");
+        // Serial.print((unsigned)_mqtt_client.getBufferSize());
+        // Serial.println(" bytes");
     } else {
         Serial.print("\txx mqtt packet buffer stayed at ");
         Serial.print((unsigned)_mqtt_client.getBufferSize());
@@ -119,8 +119,7 @@ void Mqtt::maintain() {
     if (!_mqtt_client.connected() || !is_connected) {
 
         // we just noticed a drop — was connected last we knew, isn't now.
-        // (the controller observes is_connected on each tick and counts
-        // drops itself; this module no longer reaches into a callback.)
+        // the controller counts drops from is_connected
         is_connected = false;
 
         // First attempt after boot runs immediately. After a failure we wait

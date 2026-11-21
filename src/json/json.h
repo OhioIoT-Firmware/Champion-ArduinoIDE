@@ -47,7 +47,7 @@ class JSON {
 		void last_key(char * buffer, size_t buffer_size, const char * key, const char * value);
 		void one_key(char * buffer, size_t buffer_size, const char * key, const char * value);
 
-		// Array wrappers — same calls as before. The compiler supplies sizeof(buffer).
+		// array wrappers, the compiler supplies sizeof(buffer)
 		template <size_t N> void first_key(char (&buffer)[N], const char * key, bool value)              { first_key(buffer, N, key, value); }
 		template <size_t N> void add_key(char (&buffer)[N], const char * key, bool value)                { add_key(buffer, N, key, value); }
 		template <size_t N> void last_key(char (&buffer)[N], const char * key, bool value)               { last_key(buffer, N, key, value); }

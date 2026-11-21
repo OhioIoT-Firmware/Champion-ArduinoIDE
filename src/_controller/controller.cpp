@@ -95,9 +95,6 @@ void Controller::setup(const char * wifi_ssid, const char * wifi_pass, const cha
 
 	wifi_tools.begin(wifi_ssid, wifi_pass);
 
-	// Serial.print("\tusing MQTT host: ");	Serial.println(MQTT_HOST);
-	// Serial.print("\tusing MQTT port: ");	Serial.println(MQTT_PORT);
-
 	mqtt.setup(MQTT_HOST, MQTT_PORT, mqtt_user, mqtt_pass, deviceID, CA_CERT); 
 
 	ota.set_ca_cert(CA_CERT);   // controller owns the cert; inject same root CA into OTA
@@ -207,8 +204,6 @@ static bool namespaces_sent = false;
 
 void Controller::loop() {
 
-	// do something that doesn't require MQTT
-
 	if (wifi_tools.is_connected) {
 
 		mqtt.maintain();
@@ -220,8 +215,6 @@ void Controller::loop() {
 			_report_boot_ota_outcome();   // once-only; no-op after first run
 
 			_publish_settings_snapshot(); // once-only; populates the dashboard's settings section
-
-			// do something that requires MQTT
 
 			if (!namespaces_sent) {
 				mqtt.publish_namespaces();

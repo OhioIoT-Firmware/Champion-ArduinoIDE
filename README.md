@@ -21,8 +21,8 @@ The four values at the top of the sketch:
 ```c
 #define WIFI_SSID  "your-wifi-name"
 #define WIFI_PASS  "your-wifi-password"
-#define MQTT_USER  "your-mqtt-user"			// found in the Settings tab of the OhioIoT app
-#define MQTT_PASS  "your-mqtt-password"		// found in the Settings tab of the OhioIoT app
+#define MQTT_USER  "your-mqtt-user"      // found in the Settings tab of the OhioIoT app
+#define MQTT_PASS  "your-mqtt-password"  // found in the Settings tab of the OhioIoT app
 ```
 
 The SDK connects to `mqtt.ohioiot.com` on port **8883** with TLS. The CA certificate is built into the SDK, so you don't download a cert or create a `ca_cert.h` file.
@@ -52,11 +52,8 @@ Port **1883** is only for a local, unsecured broker on your own network; it won'
 ## The Controller
 
 The controller quarterbacks the remaining modules so that they can remain relatively unaware of each other.
-You do not need to edit this module for this to work. It is plain,
-readable source. Open it any time to see how the pieces fit together, or tweak it
-to change how the framework behaves. Nothing here is a black box.
 
-Feedback is welcome.
+You do not need to edit the controller for this to work. It is plain, readable source. Open it any time to see how the pieces fit together, or tweak it to change how the framework behaves. Nothing here is a black box.
 
 *Find video tutorials on making IoT systems at the [YouTube channel](https://www.youtube.com/@ohioiot).*
 

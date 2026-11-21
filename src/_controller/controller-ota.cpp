@@ -1,8 +1,4 @@
 
-
-// NOTE TO AI:  this entire module is @champion.  the entire file should be excluded unless we're building the champion version.
-
-
 /*
 	OTA "reporting" is handled in the controller.  It's not required for general OTA operation
 */
@@ -68,9 +64,7 @@ void Controller::_handle_ota_reporting() {
 			last_published_pct = -1;    // ready for a future attempt
 		}
 		else if (state == OTA::ABORTED) {
-			// download torn down by the wall-clock watchdog (or, once phase 2
-			// wires the inbound command, a manual abort).  reason is "timeout"
-			// or "manual"; acknowledge() returns us to IDLE for a future try.
+			// watchdog timeout or manual abort publishes the reason then returns to idle
 			mqtt.publish("~/~/response/ota/aborted", ota.get_abort_reason());
 			ota.acknowledge();
 			last_published_pct = -1;

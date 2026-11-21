@@ -30,16 +30,7 @@ void Monitor::setup(int interval) {
 // connected when send_all ran), ship it now on the first successful tick.
 void Monitor::send_heartbeat() {
 
-	// _heartbeat_timer defaults to 0, which means the "> _interval" check
-	// below is really measuring time-since-power-on, not time-since-mqtt-
-	// connected.  That's harmless as long as boot (wifi + mqtt + subscribe)
-	// takes longer than _interval — it usually did, so the first heartbeat
-	// landed right alongside the settings snapshot and nobody noticed.  On
-	// a fast boot it doesn't, and the boot status packet stalls for however
-	// many seconds are left until millis() catches up to _interval.
-	//
-	// Fix: catch the rising edge of mqtt.is_connected and rewind the timer
-	// so the very next check fires immediately, regardless of power-on time.
+	// on mqtt connect, rewind the timer so the first heartbeat fires immediately
 	if (mqtt.is_connected && !_mqtt_was_connected) {
 		_heartbeat_timer = millis() - _interval;
 		_heartbeat_counter = 0;
@@ -148,7 +139,6 @@ void Monitor::send_network() {
 
 	json.first_key(buffer,   "SSID",        metrics.SSID);
 	json.add_key(buffer, "local_IP",    metrics.local_IP);
-	// json.add_key(buffer,   "dns_IP",      metrics.dns_IP);
 	json.last_key(buffer,  "mac_address", metrics.mac_address);
 
 	mqtt.publish("~/~/status", buffer);

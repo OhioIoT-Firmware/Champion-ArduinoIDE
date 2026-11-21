@@ -70,40 +70,30 @@ void OTA::_log_ota_status() {
     switch (ota_state) {
         case ESP_OTA_IMG_UNDEFINED:                                             // 0xFFFFFFFF
             Serial.println(" - OTA state is undefined");
-            // Handle undefined state (e.g., log error, notify user, etc.)
             break;
 
         case ESP_OTA_IMG_NEW:                                                   // 1
             Serial.println(" - OTA image is new and not yet validated");
-            // Handle new image state (e.g., set a flag, prepare validation, etc.)
             break;
 
         case ESP_OTA_IMG_PENDING_VERIFY:                                        // 2
             Serial.println(" - OTA image is pending verification");
-            // Handle pending verification state
-            // If verification logic indicates success:
-            // mark_firmware_as_valid();
-            // Otherwise, if verification fails:
             break;
 
         case ESP_OTA_IMG_VALID:                                                 // 3
             Serial.println(" - OTA image is valid");
-            // Handle valid image state (e.g., proceed with normal operation)
             break;
 
         case ESP_OTA_IMG_INVALID:                                               // 4
             Serial.println(" - OTA image is invalid");
-            // Handle invalid image state (e.g., trigger rollback)
             break;
 
         case ESP_OTA_IMG_ABORTED:                                               // 5
             Serial.println(" - OTA image update was aborted");
-            // Handle aborted image state (e.g., retry update, notify user, etc.)
             break;
 
         default:
             Serial.println(" - xx unknown OTA state");
-            // Handle unknown state (e.g., log error, notify user, etc.)
             break;
     }
 

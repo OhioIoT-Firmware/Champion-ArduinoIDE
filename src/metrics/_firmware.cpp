@@ -31,8 +31,6 @@ void Metrics::_check_firmware(void) {
 		Serial.println("\txx fw_built timestamp truncated");
 	}
 
-	// Serial.printf("\t   - fw_built: %s\n", fw_built);
-
 	uint8_t raw[32] = {0};
 
 	esp_err_t err = esp_partition_get_sha256(esp_ota_get_running_partition(), raw);
@@ -54,7 +52,5 @@ void Metrics::_check_firmware(void) {
 		}
 	}
 	fw_hash[64] = '\0';
-
-	// Serial.printf("\t   - fw_hash: %s\n", fw_hash);
 
 }

@@ -3,7 +3,6 @@
 #include "metrics/metrics.h"
 #include "Arduino.h"
 
-// #include <WiFiClientSecure.h>
 #include <WiFi.h>
 
 
@@ -36,10 +35,5 @@ void Metrics::_check_wifi(void) {
 
 	_copy_text(SSID, sizeof(SSID), WiFi.SSID().c_str(), "SSID");
 	_copy_text(mac_address, sizeof(mac_address), WiFi.macAddress().c_str(), "mac address");
-
-	// Serial.print("\t   - IP: ");      Serial.println(local_IP);
-	// Serial.print("\t   - SSID: ");    Serial.println(SSID);
-	// Serial.print("\t   - dnsIP: ");   Serial.println(dns_IP);
-	// Serial.print("\t   - mac: ");     Serial.println(mac_address);
 
 }

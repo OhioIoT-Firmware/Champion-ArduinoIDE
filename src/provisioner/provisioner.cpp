@@ -29,9 +29,6 @@ void Provisioner::_start_provisioner() {
     _web_server.begin();
     _dns_server.start(53, "*", WiFi.softAPIP());
 
-    // These four lines below were added after the video.  
-    // I should have included them a long time ago.
-
     Serial.print("     attach to network:    ");
     Serial.println(AP_SSID);
 

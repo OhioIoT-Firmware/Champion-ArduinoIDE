@@ -62,7 +62,7 @@ class OTA {
         // Two modes for auth_key:
         //   app-driven    — caller passes auth_key (e.g. from MQTT payload)
         //   device-driven — caller omits it; device uses its own AUTH_KEY
-        //                   #defined in credentials.h
+        //                   set with a build define
         bool  update_firmware(const char * group_name, const char * auth_key = nullptr);
         void  check();             // call from main loop every iteration
         void  acknowledge();       // call after handling SUCCESS/FAILED/ABORTED
@@ -104,7 +104,7 @@ class OTA {
 
         const char *_ota_server_certificate;
 
-        // _log_partition.cpp
+        // _log_partitions.cpp
         void _log_ota_status();
 
         // _rollback.cpp

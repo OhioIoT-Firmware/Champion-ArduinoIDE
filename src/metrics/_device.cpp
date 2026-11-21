@@ -50,11 +50,4 @@ void Metrics::_check_device(void) {
 	}
 	_copy_text(reset_reason, sizeof(reset_reason), reason, "reset reason");
 
-	// Serial.printf("\t   - chip model: %s\n", chip_model);
-	// Serial.printf("\t   - chip revision: %s\n", chip_revision);
-	// Serial.printf("\t   - chip cores: %s\n", chip_cores);
-	// Serial.printf("\t   - CPU frequency: %s MHz\n", cpu_freq);
-	// Serial.printf("\t   - flash Size: %s MB\n", flash_chip_size);
-	// Serial.printf("\t   - reset reason: %s\n", reset_reason);
-
 }

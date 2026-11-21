@@ -29,8 +29,6 @@ void Events::load_all() {
 
 	_prefs.end();
 
-	// Serial.printf("\tevents loaded: starts=%u brown_outs=%u wifi_retries=%u wifi_drops=%u mqtt_reconnects=%u mqtt_drops=%u\n",
-	// 	starts, wifi_brown_outs, wifi_retries, wifi_drops, mqtt_reconnects, mqtt_drops);
 }
 
 

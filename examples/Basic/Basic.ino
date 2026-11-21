@@ -3,8 +3,8 @@
 
 #define WIFI_SSID  "your-wifi-name"
 #define WIFI_PASS  "your-wifi-password"
-#define MQTT_USER  "your-mqtt-user"			// found in the Settings tab of the OhioIoT app
-#define MQTT_PASS  "your-mqtt-password"		// found in the Settings tab of the OhioIoT app
+#define MQTT_USER  "your-mqtt-user"      // found in the Settings tab of the OhioIoT app
+#define MQTT_PASS  "your-mqtt-password"  // found in the Settings tab of the OhioIoT app
 
 
 
@@ -56,7 +56,7 @@ static const char * command_namespaces[] = {
 bool commandHandler(const char * sub_topic, const char * payload, char * error) {
 	Serial.println(payload);	// replace this with something more interesting when you are ready
 	return true;	// return false if the command couldn't be processed
-					// write a string into the error buffer if you want to return a error message
+					// write a string into the error buffer if you want to return an error message
 }
 
 

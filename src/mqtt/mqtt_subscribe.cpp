@@ -99,5 +99,5 @@ void Mqtt::_subscribe_to_all() {
         }
     }
 
-    Serial.println();   // for aesthetics
+    Serial.println();
 }

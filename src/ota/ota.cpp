@@ -40,10 +40,8 @@ void OTA::initialize() {
     // _report_boot_ota_outcome) in the default case, or via an explicit accept
     // command when REQUIRE_MANUAL_FIRMWARE_ACCEPT is set.  If neither happens
     // within ROLLBACK_THRESHOLD, the loop rolls us back.
-    // Serial.println("\n-- ENTERING ota.initialize()");
     _rollback_timer = millis();
     _need_to_check_rollback_once = true;
-    // Serial.println("-- LEAVING ota.initialize()\n");
 }
 
 

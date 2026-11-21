@@ -14,13 +14,6 @@ void Mqtt::set_std_callback(StdMessageHandler handler) {
     _mqtt_client.setCallback(_callback_wrapper);
 }
 
-// void Mqtt::_callback_wrapper(char * topic, byte * payload, unsigned int length) {
-//     char message[length+1];
-//     memcpy(message, payload, length);
-//     message[length] = 0;
-//     mqtt._stored_handler(topic, message);
-// }
-
 void Mqtt::_callback_wrapper(char * topic, byte * payload, unsigned int length) {
     if (payload == nullptr) length = 0;
     // Same constant as the packet buffer. Static, not a local array: if a

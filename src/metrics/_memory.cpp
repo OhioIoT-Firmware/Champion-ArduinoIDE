@@ -18,11 +18,4 @@ void Metrics::_check_memory(void) {
 	dtostrf(freeHeapKB,    0, 1, free_heap_kb);
 	dtostrf(minFreeHeapKB, 0, 1, min_free_heap_kb);
 
-	// Now you can pass these strings to MQTT
-	// Serial.print("\t   - free heap (KB): ");
-	// Serial.println(free_heap_kb);
-
-	// Serial.print("\t   - min free heap (KB): ");
-	// Serial.println(min_free_heap_kb);
-
 }

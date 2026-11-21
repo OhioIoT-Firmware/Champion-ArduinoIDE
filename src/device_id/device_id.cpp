@@ -33,13 +33,8 @@ void Device_ID::get_or_set(char * buffer) {
 				Serial.println("\txx stored deviceID was too long and was truncated");
 			}
 
-			// #ifdef SHOW_LOGS
-
 				Serial.print("\texisting deviceID: ");
 				Serial.println(buffer);
-
-			// #endif
-
 
 		} else {
 			

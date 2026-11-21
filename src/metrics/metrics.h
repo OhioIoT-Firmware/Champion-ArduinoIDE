@@ -7,7 +7,7 @@ class Metrics {
 
 	/*
 		Metrics gathers system values and stores them as char arrays.
-		Makers reads those values and sends them via MQTT.
+		monitor reads those values and sends them over mqtt
 	*/
 
 	public:

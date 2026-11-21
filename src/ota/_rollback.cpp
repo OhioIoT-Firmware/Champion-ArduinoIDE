@@ -21,7 +21,7 @@ void OTA::set_ota_pending() {
         Cleared by mark_firmware_as_valid() once the report is made.
     */
 
-    _prefs.begin("ota", false);  // Open namespace "ota" in RW mode
+    _prefs.begin("ota", false);
     _prefs.putBool("ota_pending", true);
     _prefs.end();
 
@@ -30,7 +30,7 @@ void OTA::set_ota_pending() {
 
 
 void OTA::mark_firmware_as_valid() {
-    _prefs.begin("ota", false);  // Open namespace "ota" in RW mode
+    _prefs.begin("ota", false);
     if (_prefs.isKey("ota_pending")) {
         if (_prefs.remove("ota_pending")) {
             Serial.println("\t'ota_pending' key removed successfully.");
@@ -43,7 +43,7 @@ void OTA::mark_firmware_as_valid() {
     _prefs.end();
 
     esp_err_t err = esp_ota_mark_app_valid_cancel_rollback();
-    if (err != ESP_OK) {    Serial.print("\txx filed to mark app as valid: "); Serial.println(esp_err_to_name(err)); } 
+    if (err != ESP_OK) {    Serial.print("\txx failed to mark app as valid: "); Serial.println(esp_err_to_name(err)); } 
     else {                  Serial.println("\tfirmware marked as valid");    }
 
 }
@@ -52,7 +52,7 @@ void OTA::mark_firmware_as_valid() {
 void OTA::_mark_firmware_as_valid_if_appropriate() {
 
 	/**
-	 * 		if we' renot requiring manual acceptance, then we can mark it valid after mqtt connects.
+	 * 		if we're not requiring manual acceptance, then we can mark it valid after mqtt connects.
 	 * 		this should be getting called in main after mqtt connects.
 	 */
 
@@ -95,7 +95,6 @@ void OTA::rollback_if_not_verified_within_time() {
             if (needs_rollback) {
                 Serial.println("\t  xx running partition has not yet been marked as valid..");
                 rollback_and_reboot();
-				// OTA::rollback_and_reboot();
             } else {
                 Serial.println("\t  .. either we haven't yet done ota, or the last ota has already been validated");
             }
@@ -113,7 +112,6 @@ void OTA::rollback_if_not_verified_within_time() {
 bool OTA::_update_is_pending_validation() {
     bool status = false;
     if (!_prefs.begin("ota", true)) {
-        // Serial.println("Error: unable to begin _prefs. OTA library might not be initialized.");
         return false;
     }
     if (_prefs.isKey("ota_pending")) {

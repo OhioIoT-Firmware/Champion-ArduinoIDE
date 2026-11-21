@@ -60,12 +60,6 @@ void Mqtt::publish(const char * topic) {
 }
 
 void padEnd(const char * str, int distance) {
-    // Serial.print("str: ");
-    // Serial.println(str);
-    // Serial.print("\tstrlen: ");
-    // Serial.println(strlen(str));
-    // Serial.print("\tstrlen(str) < distance: ");
-    // Serial.println(strlen(str) < distance);
 
     if (strlen(str) < distance) {
         for (int i = 0; i < distance - strlen(str); i++ ) {

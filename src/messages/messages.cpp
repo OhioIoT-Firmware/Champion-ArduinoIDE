@@ -23,9 +23,7 @@ void Messages::set_ota_accept_handler(ActionHandler h)   { _ota_accept_handler  
 void Messages::set_ota_rollback_handler(ActionHandler h) { _ota_rollback_handler  = h; }
 
 
-// Group namespace subscriptions now live in the mqtt module —
-// see mqtt.set_command_namespaces / mqtt.set_settings_namespaces.
-// Topics are built fresh at every connect, so nothing is stored here.
+// group namespace subscriptions are built in the mqtt module on each connect and are not stored here
 
 
 

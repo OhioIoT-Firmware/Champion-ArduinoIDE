@@ -117,7 +117,6 @@ void WiFi_Tools::_log_event(WiFiEvent_t event, WiFiEventInfo_t info) {
 				case WIFI_REASON_CONNECTION_FAIL:                    Serial.println("CONNECTION_FAIL");			break;
 				case WIFI_REASON_AP_TSF_RESET:                       Serial.println("AP_TSF_RESET");			break;
 				case WIFI_REASON_ROAMING:                            Serial.println("ROAMING");					break;
-				// case WIFI_REASON_ASSOC_COMEBACK_TIME_TOO_LONG:       Serial.println("ASSOC_CB_TIME_TOO_LONG");	break;
 
 			}
 

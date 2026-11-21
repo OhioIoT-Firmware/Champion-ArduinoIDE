@@ -31,7 +31,7 @@ void Provisioner::_set_base_routes() {
 
         // SSID stays visible so you can see which network was saved.
         // The password is masked — serial logs get copied into forum
-        // posts and videos, and this line used to be the whole passphrase.
+        // posts and videos
         char masked_pass[16];
         mask_secret(_pass, masked_pass, sizeof(masked_pass));
         Serial.print("\n\tnew SSID: "); Serial.println(_ssid);
