@@ -16,4 +16,4 @@
 #include "power/power.h"
 #include "provisioner/provisioner.h"
 #include "settings/settings.h"
-#include "_controller/controller.h"
+#include "controller/controller.h"

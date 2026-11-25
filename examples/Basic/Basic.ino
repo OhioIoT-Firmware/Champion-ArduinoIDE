@@ -20,8 +20,8 @@
 // Rename these, add your own, or leave just the nullptr if you don't need any.
 
 static const char * subscription_list[] = {
-	"~/+/inbox",			// anything sent to this one device
-	"~/+/config",			// a second topic, to show the list takes several
+	"~/~/inbox",			// anything sent to this one device
+	"~/broadcast/config",			// a second topic, to show the list takes several
 	nullptr					// keep this
 };
 

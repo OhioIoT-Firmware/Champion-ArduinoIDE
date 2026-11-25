@@ -8,7 +8,7 @@
 
 #include "Arduino.h"
 
-#include "_controller/controller.h"
+#include "controller/controller.h"
 
 #include "_certificates/ca_cert.h"
 #include "device_id/device_id.h"

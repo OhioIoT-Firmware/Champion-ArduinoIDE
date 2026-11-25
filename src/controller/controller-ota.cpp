@@ -5,7 +5,7 @@
 
 #include "Arduino.h"
 
-#include "_controller/controller.h"
+#include "controller/controller.h"
 
 #include "mqtt/mqtt.h"
 #include "ota/ota.h"

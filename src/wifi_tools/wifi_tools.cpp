@@ -15,7 +15,6 @@ void WiFi_Tools::begin(const char * ssid, const char * pass) {
 
 	strlcpy(_ssid, ssid, WIFI_SSID_LEN);
 	strlcpy(_pass, pass, WIFI_PASS_LEN);
-	_backoff_ms = RECONNECT_INTERVAL;
 	_should_reconnect = false;
 
 	Serial.println("\n\twifi connecting...");
@@ -27,7 +26,7 @@ bool WiFi_Tools::reconnect() {
 	reconnect_attempted = false;
 
 	if (!_should_reconnect) return false;
-	if (millis() - _reconnect_timer < _backoff_ms) return false;
+    if (millis() - _reconnect_timer < RECONNECT_INTERVAL) return false;
 
 	Serial.println("\n\treconnecting...\n");
 
@@ -36,17 +35,11 @@ bool WiFi_Tools::reconnect() {
 	// is a dead end the core will not retry. disconnect() then begin() starts
 	// a fresh join on both 2.x and 3.x. The core already retries the first
 	// disconnect after boot; we take over after that. The 10ms pause just
-	// lets the cancel finish — the wait between tries is the timer above
-	// (2s, then 4, 8, 16... up to 60s), so loop() stays free the rest of the time.
+    // lets the cancel finish and the wait between tries is a fixed 10s so loop() stays free the rest of the time
 	_should_reconnect = false;
 	WiFi.disconnect(false);
 	delay(10);
 	_should_reconnect = false;   // the cancel's own disconnect event can re-arm this
-
-	if (_backoff_ms < RECONNECT_MAX) {
-		_backoff_ms *= 2;
-		if (_backoff_ms > RECONNECT_MAX) _backoff_ms = RECONNECT_MAX;
-	}
 
 	WiFi.begin(_ssid, _pass);
 
@@ -88,7 +81,6 @@ void WiFi_Tools::_event_handler(WiFiEvent_t event, WiFiEventInfo_t info) {
 		if (!wifi_tools.is_connected) Serial.println("\twifi connected...\n");
 		wifi_tools.is_connected = true;
 		wifi_tools._should_reconnect = false;
-		wifi_tools._backoff_ms = RECONNECT_INTERVAL;
 	}
 
 }
