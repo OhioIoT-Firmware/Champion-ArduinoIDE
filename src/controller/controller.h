@@ -2,7 +2,14 @@
 
 #pragma once
 
-#include <stdint.h> 
+#include <stdint.h>
+
+// tier headers the sketch reaches through this file
+#include "mqtt/mqtt.h"
+#include "messages/messages.h"
+#include "power/power.h"
+#include "provisioner/provisioner.h"
+#include "settings/settings.h"
 
 
 class Controller {
