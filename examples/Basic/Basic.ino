@@ -51,12 +51,13 @@ static const char * command_namespaces[] = {
 };
 
 
-// Runs for every structured command that arrives.
-// `sub_topic` is the part after the namespace, e.g. "command/start".
+// runs for every structured command that arrives
+// sub_topic is just the command name, e.g. "start"
+// return true to claim it, then success goes out, or fail if you wrote text into error
+// return false if it isn't yours, then no response goes out and it falls through to messageHandler
 bool commandHandler(const char * sub_topic, const char * payload, char * error) {
-	Serial.println(payload);	// replace this with something more interesting when you are ready
-	return true;	// return false if the command couldn't be processed
-					// write a string into the error buffer if you want to return an error message
+    Serial.println(payload);    // replace this with something more interesting when you are ready
+    return true;
 }
 
 
