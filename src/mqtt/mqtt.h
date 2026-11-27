@@ -52,6 +52,9 @@ class Mqtt {
 
         bool is_connected = false;
 
+        // false when the mqtt username is blank
+        bool has_username() const { return _username[0] != '\0'; }
+
         // publish
         void publish(const char *, const char *);
         void publish(const char *, float);

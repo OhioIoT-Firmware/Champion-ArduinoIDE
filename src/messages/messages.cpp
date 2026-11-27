@@ -39,10 +39,13 @@ bool Messages::main_handler(char* topic, char* payload) {
 	Serial.print("\n\t### Message:");
 	messages._print_message(topic, payload);
 
+    // with a username the route is the third segment and without one it is the second
+    int first = mqtt.has_username() ? 2 : 1;
+
 	char third_elem[40], fourth_elem[40], fifth_elem[40], error[128];
-	messages._get_segment(topic, 2, third_elem, sizeof(third_elem));
-	messages._get_segment(topic, 3, fourth_elem, sizeof(fourth_elem));
-	messages._get_segment(topic, 4, fifth_elem, sizeof(fifth_elem));
+    messages._get_segment(topic, first, third_elem, sizeof(third_elem));
+    messages._get_segment(topic, first + 1, fourth_elem, sizeof(fourth_elem));
+    messages._get_segment(topic, first + 2, fifth_elem, sizeof(fifth_elem));
 
 
 	// SETTINGS UPDATES ++++++++++++++++++++++++++++++++++++++

@@ -87,10 +87,6 @@ void Mqtt::setup(const char * mqtt_host, int mqtt_port, const char * username, c
         Serial.println("). Messages larger than that will be dropped.");
     }
 
-    strcpy(_device_id, device_id);
-    strcpy(_username, username);
-    strcpy(_password, password);
-
     // WiFiClientSecure otherwise allows one try to freeze loop() for 30s of
     // TCP plus up to 120s of TLS handshake. Cap both. This does not make the
     // connect non-blocking — PubSubClient::connect() still runs to completion
@@ -136,7 +132,10 @@ void Mqtt::maintain() {
             // Shorten that for this attempt only, then put the normal timeout
             // back so a healthy session isn't held to the attempt budget.
             _mqtt_client.setSocketTimeout(MQTT_ATTEMPT_TIMEOUT_S);
-            bool connected = _mqtt_client.connect(_device_id, _username, _password);
+            // no username means no login so send neither
+            const char * user = has_username() ? _username : nullptr;
+            const char * pass = has_username() ? _password : nullptr;
+            bool connected = _mqtt_client.connect(_device_id, user, pass);
             _mqtt_client.setSocketTimeout(MQTT_SOCKET_TIMEOUT);
 
             if (connected) {
@@ -205,9 +204,19 @@ bool Mqtt::_build_topic(const char * topic, char * output, size_t output_len) {
 
     int wrote;
     if (topic[0] == '~' && topic[1] == '/' && topic[2] == '~' && topic[3] == '/') {
-        wrote = snprintf(output, output_len, "%s/%s/%s", _username, _device_id, topic + 4);
+        if (has_username()) {
+            wrote = snprintf(output, output_len, "%s/%s/%s", _username, _device_id, topic + 4);
+        } else {
+            // no username so the topic starts at the device id
+            wrote = snprintf(output, output_len, "%s/%s", _device_id, topic + 4);
+        }
     } else if (topic[0] == '~' && topic[1] == '/') {
-        wrote = snprintf(output, output_len, "%s/%s", _username, topic + 2);
+        if (has_username()) {
+            wrote = snprintf(output, output_len, "%s/%s", _username, topic + 2);
+        } else {
+            // no username so the leading ~/ is dropped
+            wrote = snprintf(output, output_len, "%s", topic + 2);
+        }
     } else {
         wrote = snprintf(output, output_len, "%s", topic);
     }

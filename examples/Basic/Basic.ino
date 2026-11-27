@@ -3,8 +3,8 @@
 
 #define WIFI_SSID  "your-wifi-name"
 #define WIFI_PASS  "your-wifi-password"
-#define MQTT_USER  "your-mqtt-user"      // found in the Settings tab of the OhioIoT app
-#define MQTT_PASS  "your-mqtt-password"  // found in the Settings tab of the OhioIoT app
+#define MQTT_USER  ""      // found in the Settings tab of the OhioIoT app
+#define MQTT_PASS  ""  // found in the Settings tab of the OhioIoT app
 
 
 
@@ -95,6 +95,13 @@ void setup() {
 
 	Serial.begin(115200);
 	Serial.println("\n\n\n+++++++++++  DEVICE BOOT  ++++++++++++++++++++++++++++++++++\n");
+
+	Serial.print("WIFI_SSID: "); Serial.println(WIFI_SSID);
+	// Serial.print("WIFI_PASS: "); Serial.println(WIFI_PASS);
+	Serial.print("MQTT_HOST: "); Serial.println(MQTT_HOST);
+	Serial.print("MQTT_PORT: "); Serial.println(MQTT_PORT);
+	Serial.print("MQTT_USER: "); Serial.println(MQTT_USER);
+	// Serial.print("MQTT_PASS: "); Serial.println(MQTT_PASS);
 
 	controller.setup(WIFI_SSID, WIFI_PASS, MQTT_USER, MQTT_PASS);
 	// controller.setup(MQTT_USER, MQTT_PASS);		// auto-launches the provisioner

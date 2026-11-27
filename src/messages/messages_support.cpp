@@ -4,6 +4,7 @@
 
 #include "Arduino.h"
 #include "wifi_tools/serial_mask.h"
+#include "mqtt/mqtt.h"
 
 
 void Messages::_print_message(char * topic, char * payload) {
@@ -15,15 +16,18 @@ void Messages::_print_message(char * topic, char * payload) {
 	// route carries a secret only when its name says so (password, token,
 	// api_key, ...).  Everything else — start, threshold, inbox text —
 	// is still printed in full.
+    // same position as the router uses
+    int first = mqtt.has_username() ? 2 : 1;
+
 	char route[40];
 	char name[40];
-	_get_segment(topic, 2, route, sizeof(route));
+    _get_segment(topic, first, route, sizeof(route));
 
 	bool hide = false;
 	if (strcmp(route, "ota") == 0) {
 		hide = true;
 	} else if (strcmp(route, "settings") == 0 || strcmp(route, "command") == 0) {
-		_get_segment(topic, 3, name, sizeof(name));
+        _get_segment(topic, first + 1, name, sizeof(name));
 		hide = name_is_secret(name);
 	}
 
